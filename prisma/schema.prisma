@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Profile {
+  id                String       @id @default(cuid())
+  fullName          String
+  gender            String // "male" | "female"
+  age               Int
+  height            String // e.g. "5 ft 6 in"
+  city              String
+  state             String
+  education         String
+  profession        String
+  income            String?
+  maritalStatus     String // "Never Married" | "Divorced" | "Widowed"
+  sect              String? // "Sunni" | "Shia" | "Just Muslim"
+  religiousLevel    String? // "Very Practicing" | "Moderate" | "Exploring"
+  namaz             String? // "5 times daily" | "Regularly" | "Sometimes"
+  about             String
+  partnerPreference String?
+  image             String
+  email             String? @unique
+  isDemo            Boolean      @default(false)
+  interestsReceived Interest[]   @relation("ReceivedInterests")
+  interestsSent     Interest[]   @relation("SentInterests")
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+}
+
+model Interest {
+  id        String   @id @default(cuid())
+  fromId    String
+  toId      String
+  message   String?
+  status    String   @default("pending") // pending | accepted | declined
+  createdAt DateTime @default(now())
+  from      Profile  @relation("SentInterests", fields: [fromId], references: [id])
+  to        Profile  @relation("ReceivedInterests", fields: [toId], references: [id])
+
+  @@index([fromId])
+  @@index([toId])
+}
