@@ -52,3 +52,11 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# internal sandbox / agent working files
+/agent-ctx/
+/tool-results/
+/worklog.md
+/download
+/.zscripts/
+/TODO

@@ -9,9 +9,17 @@ import { io, type Socket } from "socket.io-client";
  */
 let socket: Socket | null = null;
 
+/**
+ * Realtime service URL.
+ * - Sandbox/preview: gateway path with port transform (default).
+ * - Docker/self-host: set NEXT_PUBLIC_SOCKET_URL (e.g. "http://localhost:3003" or "/realtime").
+ */
+const SOCKET_URL =
+  process.env.NEXT_PUBLIC_SOCKET_URL || "/?XTransformPort=3003";
+
 export function getSocket(): Socket {
   if (!socket) {
-    socket = io("/?XTransformPort=3003", {
+    socket = io(SOCKET_URL, {
       transports: ["websocket", "polling"],
       forceNew: false,
       reconnection: true,
