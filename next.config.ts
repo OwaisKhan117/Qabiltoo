@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   reactStrictMode: false,
+  images: {
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "inline",
+  },
 };
 
 export default nextConfig;

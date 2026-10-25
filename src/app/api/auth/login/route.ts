@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import { serializeProfile } from "@/lib/qabiltoo/serialize";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ profile });
+    return NextResponse.json({ profile: serializeProfile(profile) });
   } catch (error) {
     console.error("POST /api/auth/login error:", error);
     return NextResponse.json({ error: "Login failed" }, { status: 500 });

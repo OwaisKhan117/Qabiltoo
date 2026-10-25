@@ -1,285 +1,291 @@
 "use client";
 
-import { useState } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { Search, BadgeCheck, Heart, ShieldCheck, ArrowRight } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowRight, BadgeCheck, Lock, Sparkles, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { PatternOverlay } from "../pattern";
-import type { View } from "@/lib/qabiltoo/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ParallaxCard } from "../shared/parallax-card";
+import { VerificationBadge } from "../shared/verification-badge";
+import { displayName, type Profile, type ProfilesResponse, type View } from "@/lib/qabiltoo/types";
 import { cn } from "@/lib/utils";
+
+/* Heavy canvas layers are lazy-loaded client-side only */
+const GirihCanvas = dynamic(
+  () => import("../shared/girih-canvas").then((m) => ({ default: m.GirihCanvas })),
+  { ssr: false }
+);
+const LightMotes = dynamic(
+  () => import("../shared/light-motes").then((m) => ({ default: m.LightMotes })),
+  { ssr: false }
+);
 
 interface HeroProps {
   navigate: (view: View) => void;
 }
 
+/* Slow, dignified entrance for each line of copy */
 const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 26 },
   show: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] as const },
+    transition: { duration: 0.9, delay: 0.15 + i * 0.14, ease: [0.16, 1, 0.3, 1] as const },
   }),
 };
 
-export function Hero({ navigate }: HeroProps) {
-  const [gender, setGender] = useState<string>("female");
-  const [ageMin, setAgeMin] = useState("21");
-  const [ageMax, setAgeMax] = useState("30");
-  const [city, setCity] = useState("");
+async function fetchGoldProfiles(): Promise<ProfilesResponse> {
+  const res = await fetch("/api/profiles?verificationTier=gold&limit=3");
+  if (!res.ok) throw new Error("Failed to fetch gold profiles");
+  return res.json();
+}
 
-  function handleSearch() {
-    navigate({
-      name: "browse",
-      gender,
-    });
-    // stash extra filters for browse view
-    if (typeof window !== "undefined") {
-      window.sessionStorage.setItem(
-        "qabiltoo-search",
-        JSON.stringify({ gender, ageMin, ageMax, city })
-      );
-    }
+/* ── Floating profile-card mockup ─────────────────────────── */
+function FloatingProfileCard({
+  profile,
+  floatClass,
+  rotate = 0,
+  className,
+  showPhoto = true,
+  delay = 0,
+  priority = false,
+}: {
+  profile: Profile;
+  floatClass?: string;
+  rotate?: number;
+  className?: string;
+  showPhoto?: boolean;
+  delay?: number;
+  priority?: boolean;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40, scale: 0.94 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 1, delay, ease: [0.16, 1, 0.3, 1] }}
+      className={cn("absolute", className)}
+    >
+      <div className={floatClass}>
+        <ParallaxCard maxTilt={7} depth={10} className="w-full">
+          <div
+            style={{ transform: `rotate(${rotate}deg)` }}
+            className="w-40 rounded-2xl border border-white/20 bg-white/10 p-2.5 shadow-2xl shadow-emerald-950/40 backdrop-blur-md sm:w-44 lg:w-48"
+          >
+            {showPhoto && (
+              <div className="relative mb-2.5 aspect-[4/4.1] w-full overflow-hidden rounded-xl">
+                <Image
+                  src={profile.image}
+                  alt={`Profile of ${displayName(profile.fullName)}`}
+                  fill
+                  sizes="(max-width: 640px) 160px, 192px"
+                  priority={priority}
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/45 via-transparent to-transparent" />
+              </div>
+            )}
+            <div className="space-y-1 px-0.5 pb-0.5">
+              <div className="flex items-center justify-between gap-1">
+                <p className="truncate font-display text-sm font-semibold text-white">
+                  {displayName(profile.fullName)}
+                </p>
+                <VerificationBadge tier={profile.verificationTier} iconSize={13} />
+              </div>
+              <p className="truncate text-[11px] text-white/70">
+                {profile.age} yrs · {profile.city}
+              </p>
+            </div>
+          </div>
+        </ParallaxCard>
+      </div>
+    </motion.div>
+  );
+}
+
+export function Hero({ navigate }: HeroProps) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["hero-gold-profiles"],
+    queryFn: fetchGoldProfiles,
+    staleTime: 60_000,
+  });
+
+  const cards = (data?.profiles ?? []).slice(0, 3);
+  const [cardA, cardB, cardC] = cards;
+
+  function scrollToHowItWorks() {
+    document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   return (
-    <section className="relative overflow-hidden" aria-label="Hero">
-      <PatternOverlay className="text-primary/40 opacity-40" />
-      {/* soft gold radial glow */}
-      <div className="pointer-events-none absolute -top-40 right-[-10%] h-[500px] w-[500px] rounded-full bg-gold-300/20 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-[-20%] left-[-10%] h-[400px] w-[400px] rounded-full bg-primary/10 blur-3xl" />
+    <section
+      className="relative overflow-hidden bg-gradient-to-br from-emerald-900 via-emerald-700 to-emerald-950 text-white"
+      aria-label="Welcome to Qabiltoo"
+    >
+      {/* ── Atmosphere layers ── */}
+      <div className="absolute inset-0 opacity-50">
+        <GirihCanvas color="#d4af37" density={6} speed={0.8} opacity={0.6} />
+      </div>
+      <div className="absolute inset-0">
+        <LightMotes count={42} speed={0.8} />
+      </div>
+      {/* soft glows */}
+      <div className="pointer-events-none absolute -left-40 top-10 h-[460px] w-[460px] rounded-full bg-emerald-500/25 blur-3xl" />
+      <div className="pointer-events-none absolute -right-32 bottom-0 h-[520px] w-[520px] rounded-full bg-gold-500/15 blur-3xl" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-emerald-950/70 to-transparent" />
 
-      <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-8 lg:pb-24 lg:pt-20">
-        {/* ---- Left: copy + search ---- */}
-        <div className="max-w-xl">
-          <motion.p
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            custom={0}
-            className="mb-4 flex items-center gap-3 text-sm font-medium text-gold-700 dark:text-gold-400"
-          >
-            <span className="font-serif text-xl leading-none text-gold-600 dark:text-gold-400" lang="ar">
-              السَّلَامُ عَلَيْكُمْ
-            </span>
-            <span className="h-px w-8 bg-gold-500/60" />
-            <span>Welcome to Qabiltoo</span>
-          </motion.p>
-
-          <motion.h1
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            custom={1}
-            className="font-display text-4xl font-bold leading-[1.12] tracking-tight sm:text-5xl lg:text-[3.4rem]"
-          >
-            Where <span className="italic text-primary">Faith</span> Finds Its{" "}
-            <span className="relative inline-block text-gradient-gold">
-              Forever
-              <svg
-                viewBox="0 0 220 12"
-                className="absolute -bottom-1 left-0 w-full text-gold-500/70"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3 9c40-6 120-8 214-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
-          </motion.h1>
-
-          <motion.p
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            custom={2}
-            className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg"
-          >
-            India&apos;s most trusted Muslim matrimony — built on the belief that every heart
-            deserves a <span className="font-semibold text-foreground">qabil</span> partner.
-            Verified profiles, halal interactions, and families involved every step of the way.
-          </motion.p>
-
-          {/* Search card */}
+      <div className="relative mx-auto grid min-h-[92vh] w-full max-w-7xl items-center gap-10 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6 lg:px-8 lg:pb-20 lg:pt-16">
+        {/* ── Left: copy + CTAs ── */}
+        <div className="max-w-2xl">
+          {/* Arabic calligraphy accent */}
           <motion.div
             variants={fadeUp}
             initial="hidden"
             animate="show"
-            custom={3}
-            className="mt-8 rounded-2xl border border-border bg-card/90 p-4 shadow-xl shadow-primary/5 backdrop-blur sm:p-5"
+            custom={0}
+            className="mb-5 flex items-center gap-4"
           >
-            <div className="mb-4 flex gap-2" role="tablist" aria-label="I am looking for">
-              {[
-                { value: "female", label: "A Bride" },
-                { value: "male", label: "A Groom" },
-              ].map((opt) => (
-                <button
-                  key={opt.value}
-                  role="tab"
-                  aria-selected={gender === opt.value}
-                  onClick={() => setGender(opt.value)}
-                  className={cn(
-                    "flex-1 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-all",
-                    gender === opt.value
-                      ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/20"
-                      : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground"
-                  )}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-[1fr_1fr_1.3fr]">
-              <Select value={ageMin} onValueChange={setAgeMin}>
-                <SelectTrigger aria-label="Minimum age">
-                  <SelectValue placeholder="Age from" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 42 }, (_, i) => i + 18).map((n) => (
-                    <SelectItem key={n} value={String(n)}>
-                      {n} yrs
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={ageMax} onValueChange={setAgeMax}>
-                <SelectTrigger aria-label="Maximum age">
-                  <SelectValue placeholder="Age to" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 42 }, (_, i) => i + 18).map((n) => (
-                    <SelectItem key={n} value={String(n)}>
-                      {n} yrs
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Input
-                placeholder="City (e.g. Mumbai)"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="col-span-2 sm:col-span-1"
-                aria-label="City"
-              />
-            </div>
-
-            <Button size="lg" className="mt-4 w-full gap-2 text-base" onClick={handleSearch}>
-              <Search className="h-5 w-5" />
-              Find My Qabil Match
-            </Button>
+            <span className="font-arabic text-4xl leading-none text-gold-300 drop-shadow-[0_2px_14px_rgba(212,175,55,0.35)] sm:text-5xl" lang="ar" aria-hidden="true">
+              نكاح
+            </span>
+            <span className="h-px w-14 bg-gradient-to-r from-gold-400/80 to-transparent" aria-hidden="true" />
           </motion.div>
 
-          {/* Trust row */}
+          {/* Eyebrow */}
+          <motion.p
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            custom={1}
+            className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-gold-200/90 sm:text-sm"
+          >
+            Assalamu Alaikum — Welcome to Qabiltoo
+          </motion.p>
+
+          {/* Headline */}
+          <motion.h1
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            custom={2}
+            className="font-display text-4xl font-bold leading-[1.14] tracking-tight text-white sm:text-5xl lg:text-[3.6rem]"
+          >
+            Begin Your Journey to a{" "}
+            <span className="text-gradient-gold">Blessed Nikah</span>
+          </motion.h1>
+
+          {/* Subheadline */}
+          <motion.p
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            custom={3}
+            className="mt-5 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg"
+          >
+            A privacy-first, guardian-approved matrimony where every introduction is halal,
+            every profile verified — and your family involved from the very first Salaam.
+          </motion.p>
+
+          {/* CTAs */}
           <motion.div
             variants={fadeUp}
             initial="hidden"
             animate="show"
             custom={4}
-            className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-muted-foreground"
+            className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
           >
-            <div className="flex -space-x-2.5">
-              {["/images/profile-f1.png", "/images/profile-m2.png", "/images/profile-f3.png", "/images/profile-m4.png"].map(
-                (src, i) => (
-                  <span
-                    key={i}
-                    className="relative h-9 w-9 overflow-hidden rounded-full border-2 border-background"
-                  >
-                    <Image src={src} alt="" fill sizes="36px" className="object-cover" />
-                  </span>
-                )
-              )}
-              <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-background bg-gold-500 text-[10px] font-bold text-primary-foreground">
-                50K+
-              </span>
-            </div>
-            <span className="flex items-center gap-1.5">
-              <BadgeCheck className="h-4 w-4 text-primary" /> Verified profiles
-            </span>
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4 text-primary" /> Privacy first
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Heart className="h-4 w-4 fill-primary text-primary" /> 12,400+ nikahs
-            </span>
+            <Button
+              size="lg"
+              onClick={() => navigate({ name: "register" })}
+              className="btn-gold-shimmer rounded-full bg-gold-500 text-base font-semibold text-emerald-950 shadow-lg shadow-gold-500/30 hover:bg-gold-400"
+            >
+              Create Free Profile
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={scrollToHowItWorks}
+              className="rounded-full border-white/35 bg-white/5 text-base text-white hover:border-gold-300/60 hover:bg-white/10 hover:text-white"
+            >
+              <Sparkles className="h-4 w-4 text-gold-300" />
+              How It Works
+            </Button>
           </motion.div>
+
+          {/* Trust microcopy */}
+          <motion.ul
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            custom={5}
+            className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-white/70"
+          >
+            <li className="flex items-center gap-1.5">
+              <BadgeCheck className="h-4 w-4 text-gold-300" aria-hidden />
+              ID-verified profiles
+            </li>
+            <li aria-hidden="true" className="text-white/30">·</li>
+            <li className="flex items-center gap-1.5">
+              <Users className="h-4 w-4 text-gold-300" aria-hidden />
+              Guardian-friendly
+            </li>
+            <li aria-hidden="true" className="text-white/30">·</li>
+            <li className="flex items-center gap-1.5">
+              <Lock className="h-4 w-4 text-gold-300" aria-hidden />
+              Photos blurred until matched
+            </li>
+          </motion.ul>
         </div>
 
-        {/* ---- Right: hero image in Islamic arch ---- */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.96, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mx-auto w-full max-w-lg lg:max-w-none"
-        >
-          {/* decorative ring */}
-          <div className="absolute -inset-4 rounded-t-[14rem] rounded-b-[2.5rem] border border-gold-400/40 sm:-inset-6" aria-hidden="true" />
-          <div className="absolute -inset-4 translate-x-3 translate-y-3 rounded-t-[14rem] rounded-b-[2.5rem] bg-gold-200/40 sm:-inset-6" aria-hidden="true" />
+        {/* ── Right: floating 3D profile-card mockups ── */}
+        <div className="relative mx-auto h-[300px] w-full max-w-md sm:h-[380px] lg:h-[470px] lg:max-w-none">
+          {/* decorative halo */}
+          <div
+            className="absolute left-1/2 top-1/2 h-[85%] w-[85%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-gold-400/25"
+            aria-hidden="true"
+          />
+          <div
+            className="absolute left-1/2 top-1/2 h-[70%] w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-400/10 blur-3xl"
+            aria-hidden="true"
+          />
 
-          <div className="relative aspect-[4/4.6] overflow-hidden rounded-t-[13rem] rounded-b-[2rem] shadow-2xl shadow-primary/20">
-            <Image
-              src="/images/hero-couple.png"
-              alt="Happy Indian Muslim couple on their wedding day — bride in emerald and gold, groom in ivory sherwani"
-              fill
+          {isLoading && (
+            <div className="absolute left-1/2 top-1/2 w-44 -translate-x-1/2 -translate-y-1/2">
+              <Skeleton className="aspect-[4/5] w-full rounded-2xl bg-white/10" />
+            </div>
+          )}
+
+          {cardA && (
+            <FloatingProfileCard
+              profile={cardA}
+              rotate={-4}
+              floatClass="float-slow"
               priority
-              sizes="(max-width: 1024px) 90vw, 44vw"
-              className="object-cover"
+              delay={0.45}
+              className="left-1/2 top-1/2 z-20 w-max -translate-x-1/2 -translate-y-1/2 lg:left-8 lg:top-6 lg:translate-x-0 lg:translate-y-0"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-primary/25 via-transparent to-transparent" />
-          </div>
-
-          {/* floating badge: verified */}
-          <motion.div
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -left-3 top-24 flex items-center gap-2.5 rounded-2xl border border-border bg-card/95 px-3.5 py-2.5 shadow-lg backdrop-blur sm:-left-8"
-          >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10">
-              <BadgeCheck className="h-5 w-5 text-primary" />
-            </span>
-            <div>
-              <p className="text-xs font-bold">100% Verified</p>
-              <p className="text-[11px] text-muted-foreground">Manual review</p>
-            </div>
-          </motion.div>
-
-          {/* floating badge: match */}
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-            className="absolute -right-2 bottom-16 rounded-2xl border border-border bg-card/95 px-4 py-3 shadow-lg backdrop-blur sm:-right-6"
-          >
-            <p className="flex items-center gap-1.5 text-xs font-bold">
-              Nikah Fixed!
-              <Heart className="h-3.5 w-3.5 fill-gold-500 text-gold-500" />
-            </p>
-            <p className="mt-0.5 text-[11px] text-muted-foreground">Zoya &amp; Faizan · Delhi</p>
-            <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-              <div className="h-full w-[86%] rounded-full bg-gradient-to-r from-primary to-gold-500" />
-            </div>
-          </motion.div>
-
-          {/* CTA link under image (mobile-friendly) */}
-          <button
-            onClick={() => navigate({ name: "browse" })}
-            className="group mx-auto mt-8 flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 lg:hidden"
-          >
-            Explore profiles
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </button>
-        </motion.div>
+          )}
+          {cardB && (
+            <FloatingProfileCard
+              profile={cardB}
+              rotate={3}
+              floatClass="float-slower"
+              delay={0.65}
+              className="bottom-0 right-0 z-10 hidden w-max sm:block lg:right-auto lg:bottom-2 lg:left-[15rem]"
+            />
+          )}
+          {cardC && (
+            <FloatingProfileCard
+              profile={cardC}
+              rotate={-2}
+              floatClass="float-slow"
+              delay={0.85}
+              className="right-4 top-0 z-0 hidden w-max lg:block"
+            />
+          )}
+        </div>
       </div>
     </section>
   );

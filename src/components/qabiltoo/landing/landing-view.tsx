@@ -1,12 +1,14 @@
 "use client";
 
+import { ActivityTicker } from "./activity-ticker";
 import { Hero } from "./hero";
 import { StatsStrip } from "./stats-strip";
-import { Features } from "./features";
 import { HowItWorks } from "./how-it-works";
+import { FeaturedProfiles } from "./featured-profiles";
 import { VerseBanner } from "./verse-banner";
 import { SuccessStories } from "./success-stories";
-import { FeaturedProfiles } from "./featured-profiles";
+import { TrustBadges } from "./features";
+import { ApproachPreview } from "./approach-preview";
 import { Faq } from "./faq";
 import { CtaSection } from "./cta-section";
 import type { Profile, View } from "@/lib/qabiltoo/types";
@@ -27,18 +29,20 @@ export function LandingView({
   return (
     <main>
       <Hero navigate={navigate} />
+      <ActivityTicker />
       <StatsStrip />
-      <Features />
+      <HowItWorks />
       <FeaturedProfiles
         navigate={navigate}
         onViewProfile={onViewProfile}
         onSendInterest={onSendInterest}
         interestedIds={interestedIds}
       />
-      <HowItWorks navigate={navigate} />
       <VerseBanner />
-      <SuccessStories />
-      <Faq />
+      <SuccessStories navigate={navigate} />
+      <TrustBadges />
+      <ApproachPreview navigate={navigate} />
+      <Faq navigate={navigate} />
       <CtaSection navigate={navigate} />
     </main>
   );

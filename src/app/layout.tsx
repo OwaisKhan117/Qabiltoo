@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
+import {
+  Playfair_Display,
+  Plus_Jakarta_Sans,
+  Geist_Mono,
+  Amiri,
+} from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -21,10 +26,17 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const amiri = Amiri({
+  variable: "--font-amiri",
+  subsets: ["arabic"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Qabiltoo — Where Faith Finds Its Forever | Muslim Matrimony",
+  title: "Qabiltoo — Begin Your Journey to a Blessed Nikah",
   description:
-    "Qabiltoo is India's trusted Muslim matrimonial platform. Find your qabil match — verified profiles, faith-centered matching, complete privacy, and family-first values. Begin your journey to nikah today.",
+    "Qabiltoo is a premium Muslim matrimonial platform. Find a nikah partner in a trustworthy, Islamic, privacy-first environment — verified profiles, guardian approval, and family-first matchmaking.",
   keywords: [
     "Muslim matrimony",
     "nikah",
@@ -40,9 +52,9 @@ export const metadata: Metadata = {
     icon: "/logo.svg",
   },
   openGraph: {
-    title: "Qabiltoo — Where Faith Finds Its Forever",
+    title: "Qabiltoo — Begin Your Journey to a Blessed Nikah",
     description:
-      "India's trusted Muslim matrimonial platform. Verified profiles, faith-centered matching, and complete privacy.",
+      "A premium, privacy-first Muslim matrimonial platform. Verified profiles, guardian-approved, halal by design.",
     siteName: "Qabiltoo",
     type: "website",
   },
@@ -52,8 +64,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf8f2" },
-    { media: "(prefers-color-scheme: dark)", color: "#12211d" },
+    { media: "(prefers-color-scheme: light)", color: "#fbf7f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a1512" },
   ],
 };
 
@@ -65,7 +77,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${playfair.variable} ${jakarta.variable} ${geistMono.variable} font-sans antialiased bg-background text-foreground`}
+        className={`${playfair.variable} ${jakarta.variable} ${geistMono.variable} ${amiri.variable} font-sans antialiased bg-background text-foreground`}
       >
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
           {children}

@@ -16,7 +16,11 @@ import { Heart, Loader2 } from "lucide-react";
 import { useAuthStore } from "@/lib/qabiltoo/store";
 import type { Profile } from "@/lib/qabiltoo/types";
 
-const TEMPLATE = "Assalamu Alaikum! I came across your profile and it resonated with me. I would be honored if our families could connect. JazakAllah khair.";
+const TEMPLATES = [
+  "Assalamu Alaikum! I came across your profile and it resonated with me. I would be honored if our families could connect. JazakAllah khair.",
+  "Assalamu Alaikum. Your balance of deen and ambition is admirable. I would be grateful if our families could be introduced.",
+  "Assalamu Alaikum. MashaAllah on a thoughtful profile — I would welcome a respectful, family-first conversation.",
+];
 
 interface SendInterestDialogProps {
   profile: Profile | null;
@@ -26,7 +30,7 @@ interface SendInterestDialogProps {
 }
 
 export function SendInterestDialog({ profile, open, onOpenChange, onSuccess }: SendInterestDialogProps) {
-  const [message, setMessage] = useState(TEMPLATE);
+  const [message, setMessage] = useState(TEMPLATES[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const user = useAuthStore((s) => s.user);
@@ -47,7 +51,7 @@ export function SendInterestDialog({ profile, open, onOpenChange, onSuccess }: S
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error ?? "Failed to send interest");
+        setError(data.error ?? "Failed to send proposal");
         return;
       }
       onOpenChange(false);
@@ -67,16 +71,28 @@ export function SendInterestDialog({ profile, open, onOpenChange, onSuccess }: S
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-500/15">
               <Heart className="h-4.5 w-4.5 fill-gold-500 text-gold-500" />
             </span>
-            Send Interest
+            Send Proposal
           </DialogTitle>
           <DialogDescription>
             {profile
-              ? `Express your interest in ${profile.fullName.split(" ")[0]} respectfully. A kind message goes a long way — insha'Allah.`
+              ? `Express your interest in ${profile.fullName.split(" ")[0]} respectfully — proposals here are family-first and reviewed with dignity. Insha'Allah.`
               : ""}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2">
+          <div className="flex flex-wrap gap-1.5">
+            {TEMPLATES.map((t, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => setMessage(t)}
+                className="rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground transition-colors hover:border-gold-400 hover:text-gold-700 dark:hover:text-gold-400"
+              >
+                Template {i + 1}
+              </button>
+            ))}
+          </div>
           <Label htmlFor="interest-message">Your message</Label>
           <Textarea
             id="interest-message"

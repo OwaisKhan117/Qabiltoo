@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { serializeProfile } from "@/lib/qabiltoo/serialize";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export async function GET(
     if (!profile) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
-    return NextResponse.json({ profile });
+    return NextResponse.json({ profile: serializeProfile(profile) });
   } catch (error) {
     console.error("GET /api/profiles/[id] error:", error);
     return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });

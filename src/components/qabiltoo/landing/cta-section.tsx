@@ -1,68 +1,69 @@
 "use client";
 
-import Image from "next/image";
-import { motion } from "framer-motion";
-import { Sparkles, ArrowRight } from "lucide-react";
+import dynamic from "next/dynamic";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PatternOverlay } from "../pattern";
+import { Reveal } from "../shared/reveal";
 import type { View } from "@/lib/qabiltoo/types";
+
+const GirihCanvas = dynamic(
+  () => import("../shared/girih-canvas").then((m) => ({ default: m.GirihCanvas })),
+  { ssr: false }
+);
 
 export function CtaSection({ navigate }: { navigate: (view: View) => void }) {
   return (
-    <section className="relative py-20 lg:py-24" aria-label="Call to action">
+    <section className="py-20 lg:py-24" aria-label="Begin your journey">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.7 }}
-          className="relative overflow-hidden rounded-[2.5rem] shadow-2xl shadow-primary/20"
-        >
-          {/* Background image */}
-          <Image
-            src="/images/mosque-golden.png"
-            alt=""
-            fill
-            sizes="(max-width: 1280px) 95vw, 1200px"
-            className="object-cover"
-            aria-hidden="true"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/85 to-primary/60" />
-          <PatternOverlay className="text-white/10" />
+        <Reveal direction="scale" duration={1}>
+          <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-950 px-6 py-16 text-center text-white shadow-2xl shadow-emerald-950/30 sm:px-12 lg:py-20">
+            {/* faint girih lattice + pattern */}
+            <div className="absolute inset-0 opacity-30">
+              <GirihCanvas color="#d4af37" density={5} speed={0.6} opacity={0.7} />
+            </div>
+            <PatternOverlay className="text-white/5" />
+            <div className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full bg-gold-500/10 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-gold-500/10 blur-3xl" />
 
-          <div className="relative grid items-center gap-8 p-8 sm:p-12 lg:grid-cols-[1.4fr_1fr] lg:p-16">
-            <div className="text-white">
-              <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.25em] text-gold-300">
-                <Sparkles className="h-4 w-4" /> Your story starts with Salaam
+            <div className="relative mx-auto max-w-2xl">
+              <p
+                className="font-arabic text-3xl text-gold-300/90 sm:text-4xl"
+                lang="ar"
+                aria-hidden="true"
+              >
+                رِزْقٌ مَكْتُوب
               </p>
               <h2 className="mt-4 font-display text-3xl font-bold leading-tight sm:text-4xl lg:text-[2.75rem]">
-                Your qabil match is closer than you think.
+                Your nikah is written — we help you find it
               </h2>
-              <p className="mt-4 max-w-lg text-base leading-relaxed text-white/85">
-                Join 50,000+ members across India who chose faith-first matrimony. Free to
-                join, dignified by design, blessed by community.
+              <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/80">
+                Trust in Allah, take the dignified first step. Join thousands of families who
+                began with a single Salaam — free, private and blessed with barakah.
               </p>
-            </div>
-            <div className="flex flex-col items-stretch gap-3 sm:flex-row lg:flex-col">
-              <Button
-                size="lg"
-                variant="secondary"
-                className="rounded-full bg-gold-500 text-primary-foreground hover:bg-gold-400 sm:justify-center"
-                onClick={() => navigate({ name: "register" })}
-              >
-                Create Free Profile <ArrowRight className="h-4 w-4" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="rounded-full border-white/40 bg-white/10 text-white hover:bg-white/20 hover:text-white sm:justify-center"
-                onClick={() => navigate({ name: "browse" })}
-              >
-                Browse Profiles First
-              </Button>
+
+              <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Button
+                  size="lg"
+                  onClick={() => navigate({ name: "register" })}
+                  className="btn-gold-shimmer w-full rounded-full bg-gold-500 text-base font-semibold text-emerald-950 shadow-lg shadow-gold-500/30 hover:bg-gold-400 sm:w-auto"
+                >
+                  <Sparkles className="h-4 w-4" aria-hidden />
+                  Begin Free — Create Profile
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => navigate({ name: "pricing" })}
+                  className="w-full rounded-full border-white/35 bg-white/5 text-base text-white hover:border-gold-300/60 hover:bg-white/10 hover:text-white sm:w-auto"
+                >
+                  Explore Membership
+                </Button>
+              </div>
             </div>
           </div>
-        </motion.div>
+        </Reveal>
       </div>
     </section>
   );
