@@ -9,8 +9,9 @@ WORKDIR /app
 # ── Stage 2: dependencies + build ───────────────────────────────
 FROM base AS build
 
-# Install web app dependencies (root)
+# Install web app dependencies (root) — prisma schema needed for the postinstall generate
 COPY package.json bun.lock ./
+COPY prisma ./prisma
 RUN bun install --frozen-lockfile
 
 # Install realtime service dependencies
