@@ -2,7 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  /* config options here */
+  /* Ship the seeded demo database inside serverless bundles (Vercel etc.) */
+  outputFileTracingIncludes: {
+    "/**": ["./db/custom.db"],
+  },
   typescript: {
     ignoreBuildErrors: true,
   },

@@ -97,6 +97,14 @@ cd mini-services/qabiltoo-realtime && bun run dev
 > The sandbox/preview gateway routes realtime traffic via `/?XTransformPort=3003` automatically.
 > Self-hosting outside the gateway? Set `NEXT_PUBLIC_SOCKET_URL=http://localhost:3003` at build time.
 
+### Deploy to Vercel — zero configuration
+
+Import the repo at [vercel.com/new](https://vercel.com/new) and click Deploy — **no environment
+variables needed**. The app ships its seeded demo database inside the deployment bundle and
+auto-provisions it to a writable location on first use (demo data resets on cold starts).
+Note: the realtime chat service needs a long-running host (Docker / Railway) — everything
+else works fully on Vercel.
+
 ## 🐳 Docker
 
 ```bash
