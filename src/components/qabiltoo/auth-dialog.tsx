@@ -19,17 +19,21 @@ interface AuthDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onGoRegister: () => void;
+  /** Called after a successful sign-in (used to navigate + welcome the user). */
+  onLoggedIn?: (profile: Profile) => void;
 }
 
 const DEMO_EMAIL = "ayesha@demo.qabiltoo.in";
 
-export function AuthDialog({ open, onOpenChange, onGoRegister }: AuthDialogProps) {
+export function AuthDialog({ open, onOpenChange, onGoRegister, onLoggedIn }: AuthDialogProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingDemo, setLoadingDemo] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const setUser = useAuthStore((s) => s.setUser);
 
-  async function login(withEmail: string) {
+  async function login(withEmail: string, isDemo = false) {
+    if (isDemo) setLoadingDemo(true);
     setLoading(true);
     setError(null);
     try {
@@ -46,10 +50,12 @@ export function AuthDialog({ open, onOpenChange, onGoRegister }: AuthDialogProps
       setUser(data.profile as Profile);
       onOpenChange(false);
       setEmail("");
+      onLoggedIn?.(data.profile as Profile);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
+      setLoadingDemo(false);
     }
   }
 
@@ -79,12 +85,16 @@ export function AuthDialog({ open, onOpenChange, onGoRegister }: AuthDialogProps
             <Label htmlFor="login-email">Email address</Label>
             <Input
               id="login-email"
-              type="email"
-              placeholder="you@example.com"
+              type="text"
+              inputMode="email"
+              placeholder="you@example.com  —  or just type: ayesha"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
+            <p className="text-xs text-muted-foreground">
+              Demo login: no password needed — type <span className="font-semibold text-foreground">ayesha</span> and press Sign In.
+            </p>
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Button type="submit" className="w-full" size="lg" disabled={loading}>
@@ -108,9 +118,9 @@ export function AuthDialog({ open, onOpenChange, onGoRegister }: AuthDialogProps
             variant="secondary"
             className="w-full"
             disabled={loading}
-            onClick={() => login(DEMO_EMAIL)}
+            onClick={() => login(DEMO_EMAIL, true)}
           >
-            ✨ Try the demo account (Ayesha)
+            {loadingDemo ? "Signing in as Ayesha…" : "Try the demo account (Ayesha)"}
           </Button>
           <Button
             variant="outline"

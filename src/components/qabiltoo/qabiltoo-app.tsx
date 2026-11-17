@@ -216,7 +216,18 @@ function QabiltooShell() {
 
       <Footer navigate={navigate} />
 
-      <AuthDialog open={authOpen} onOpenChange={setAuthOpen} onGoRegister={() => navigate({ name: "register" })} />
+      <AuthDialog
+        open={authOpen}
+        onOpenChange={setAuthOpen}
+        onGoRegister={() => navigate({ name: "register" })}
+        onLoggedIn={(profile) => {
+          navigate({ name: "browse" });
+          toast({
+            title: `Assalamu Alaikum, ${profile.fullName.split(" ")[0]}`,
+            description: "You are signed in. Your journey to nikah awaits — barakallahu feek!",
+          });
+        }}
+      />
       <SendInterestDialog
         profile={interestTarget}
         open={interestDialogOpen}
