@@ -42,7 +42,7 @@ export function Footer({ navigate }: FooterProps) {
           ))}
         </div>
 
-        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="space-y-4">
             <Logo dark />
@@ -125,27 +125,6 @@ export function Footer({ navigate }: FooterProps) {
             </ul>
           </nav>
 
-          {/* Cities */}
-          <div>
-            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gold-300">
-              Muslim Matrimony in
-            </h3>
-            <ul className="space-y-2.5 text-sm text-primary-foreground/80">
-              {["Mumbai", "New Delhi", "Hyderabad", "Lucknow", "Bengaluru", "Dubai"].map(
-                (city) => (
-                  <li key={city}>
-                    <button
-                      className="transition-colors hover:text-gold-300"
-                      onClick={() => navigate({ name: "browse" })}
-                    >
-                      Nikah Search in {city}
-                    </button>
-                  </li>
-                )
-              )}
-            </ul>
-          </div>
-
           {/* Contact + newsletter */}
           <div>
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gold-300">
@@ -156,7 +135,7 @@ export function Footer({ navigate }: FooterProps) {
                 <Mail className="h-4 w-4 shrink-0 text-gold-300" /> care@qabiltoo.in
               </li>
               <li className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 shrink-0 text-gold-300" /> Mumbai, India
+                <MapPin className="h-4 w-4 shrink-0 text-gold-300" /> Okhla, New Delhi, India, 110025
               </li>
               <li className="flex items-start gap-2">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-gold-300" />
