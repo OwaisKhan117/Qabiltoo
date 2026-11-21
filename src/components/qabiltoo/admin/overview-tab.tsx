@@ -164,7 +164,7 @@ export function OverviewTab({
         { icon: Users, label: "Total profiles", value: stats.totalProfiles, tone: "emerald" },
         { icon: HeartHandshake, label: "Accepted proposals", value: stats.acceptedProposals, tone: "emerald" },
         { icon: MessageCircle, label: "Messages sent", value: stats.messagesCount, tone: "emerald" },
-        { icon: Crown, label: "Gold members", value: stats.goldMembers, tone: "gold" },
+        { icon: Crown, label: "Premium members", value: stats.goldMembers, tone: "gold" },
         { icon: Globe, label: "Countries", value: stats.countries, tone: "emerald" },
       ]
     : [];

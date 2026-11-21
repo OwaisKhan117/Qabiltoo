@@ -1,7 +1,7 @@
 /* ── Qabiltoo shared types ─────────────────────────────────── */
 
 export type VerificationTier = "blue" | "green" | "gold";
-export type SubscriptionTier = "Free" | "Silver" | "Gold" | "Platinum";
+export type SubscriptionTier = "Free" | "Silver" | "Gold" | "Assisted" | "Unlimited";
 export type OnBehalfOf = "self" | "family";
 
 export interface Profile {

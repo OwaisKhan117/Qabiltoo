@@ -17,6 +17,8 @@ import {
   Gem,
   GraduationCap,
   Heart,
+  HeartHandshake,
+  Infinity as InfinityIcon,
   Loader2,
   MapPin,
   MessageCircle,
@@ -108,7 +110,8 @@ const TIER_CHIP: Record<Profile["tier"], string> = {
   Free: "border-border bg-secondary text-secondary-foreground",
   Silver: "border-slate-300 bg-gradient-to-r from-slate-200 to-slate-300 text-slate-700 dark:border-slate-500 dark:from-slate-600 dark:to-slate-500 dark:text-slate-100",
   Gold: "border-gold-500 bg-gradient-to-r from-gold-400 to-gold-600 text-white shadow-sm shadow-gold-500/30",
-  Platinum: "border-blush-400 bg-gradient-to-r from-blush-200 to-blush-400 text-blush-800 dark:text-blush-100 dark:from-blush-600 dark:to-blush-500",
+  Assisted: "border-emerald-600 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-sm shadow-emerald-500/30",
+  Unlimited: "border-gold-500 bg-gradient-to-r from-emerald-700 via-gold-500 to-gold-400 text-white shadow-sm shadow-gold-500/30",
 };
 
 /* ── Photo with graceful fallback ───────────────────────────────────── */
@@ -520,7 +523,8 @@ export function ProfileDetailView({
                       )}
                     >
                       {profile.tier === "Gold" && <Gem className="h-3 w-3" aria-hidden />}
-                      {profile.tier === "Platinum" && <Sparkles className="h-3 w-3" aria-hidden />}
+                      {profile.tier === "Assisted" && <HeartHandshake className="h-3 w-3" aria-hidden />}
+                      {profile.tier === "Unlimited" && <InfinityIcon className="h-3 w-3" aria-hidden />}
                       {profile.tier} Member
                     </span>
                     <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">

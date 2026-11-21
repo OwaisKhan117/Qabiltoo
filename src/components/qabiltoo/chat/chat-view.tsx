@@ -419,7 +419,7 @@ export function ChatView({ navigate, withId }: { navigate: (v: View) => void; wi
             </Button>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
-            Silver unlocks chat · Gold adds video calls · Cancel anytime
+            Any Silver, Gold, Assisted or Unlimited plan unlocks chat · Cancel anytime
           </p>
         </div>
       </div>

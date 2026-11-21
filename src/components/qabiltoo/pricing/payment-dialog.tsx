@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { CreditCard, Lock, ShieldCheck } from "lucide-react";
+import { CreditCard, Loader2, Lock, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,11 +12,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { BILLING_META, totalPrice, type BillingPeriod, type Plan } from "./plans";
+import { useAuthStore } from "@/lib/qabiltoo/store";
+import type { Profile } from "@/lib/qabiltoo/types";
+import { formatINR, perMonth, type Plan } from "./plans";
 
 interface PaymentDialogProps {
   plan: Plan | null;
-  period: BillingPeriod;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -23,20 +25,52 @@ interface PaymentDialogProps {
 /**
  * Elegant "secure payment gateway" placeholder — the real gateway
  * (Razorpay / Stripe) will be connected here in a later phase.
+ * In demo mode, paying activates the chosen membership instantly.
  */
-export function PaymentDialog({ plan, period, open, onOpenChange }: PaymentDialogProps) {
+export function PaymentDialog({ plan, open, onOpenChange }: PaymentDialogProps) {
+  const [paying, setPaying] = useState(false);
+  const user = useAuthStore((s) => s.user);
+  const setUser = useAuthStore((s) => s.setUser);
+
   if (!plan) return null;
 
-  const meta = BILLING_META[period];
-  const total = totalPrice(plan.basePrice, period);
-  const perMonth = plan.basePrice === 0 ? 0 : Math.round(total / meta.months);
+  const monthly = perMonth(plan);
 
-  const handleDemoPay = () => {
-    toast({
-      title: "Payment gateway will be connected here",
-      description: "Demo mode — no payment has been taken, insha'Allah soon.",
-    });
-  };
+  async function handleDemoPay() {
+    if (!user) {
+      toast({
+        title: "Please sign in first",
+        description: "Create your free account or sign in to activate a membership.",
+      });
+      onOpenChange(false);
+      return;
+    }
+    setPaying(true);
+    try {
+      const res = await fetch("/api/subscription", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId: user.id, planId: plan!.id }),
+      });
+      const json = (await res.json()) as { profile?: Profile; error?: string };
+      if (!res.ok || !json.profile) {
+        throw new Error(json.error ?? "Payment could not be processed");
+      }
+      setUser(json.profile);
+      toast({
+        title: `${plan!.shortName} plan activated`,
+        description: "Chat is now unlocked — barakallahu feek, may your search be blessed.",
+      });
+      onOpenChange(false);
+    } catch (err) {
+      toast({
+        title: "We could not activate your plan",
+        description: err instanceof Error ? err.message : "Please try again in a moment.",
+      });
+    } finally {
+      setPaying(false);
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -63,7 +97,7 @@ export function PaymentDialog({ plan, period, open, onOpenChange }: PaymentDialo
                 Secure payment gateway
               </DialogTitle>
               <DialogDescription className="text-white/70">
-                Integration placeholder — {plan.name} membership · billed {period}
+                Integration placeholder — {plan.name}
               </DialogDescription>
             </DialogHeader>
           </div>
@@ -90,24 +124,21 @@ export function PaymentDialog({ plan, period, open, onOpenChange }: PaymentDialo
                 <dd className="font-semibold text-foreground">{plan.name}</dd>
               </div>
               <div className="flex items-center justify-between py-1">
-                <dt className="text-muted-foreground">Billing period</dt>
-                <dd className="font-semibold text-foreground">
-                  {meta.label}
-                  {meta.saveChip ? (
-                    <span className="ml-2 rounded-full bg-gold-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gold-700 dark:text-gold-300">
-                      {meta.saveChip}
-                    </span>
-                  ) : null}
-                </dd>
+                <dt className="text-muted-foreground">Duration</dt>
+                <dd className="font-semibold text-foreground">{plan.duration}</dd>
               </div>
-              <div className="flex items-center justify-between py-1">
-                <dt className="text-muted-foreground">Per month equivalent</dt>
-                <dd className="text-foreground">₹{perMonth.toLocaleString("en-IN")}</dd>
-              </div>
+              {monthly !== null && (
+                <div className="flex items-center justify-between py-1">
+                  <dt className="text-muted-foreground">Per month equivalent</dt>
+                  <dd className="text-foreground">₹{formatINR(monthly)}</dd>
+                </div>
+              )}
               <div className="mt-2 flex items-center justify-between border-t border-gold-500/20 pt-3">
-                <dt className="font-semibold text-foreground">Total due today</dt>
+                <dt className="font-semibold text-foreground">
+                  {plan.durationMonths === null ? "One-time payment" : "Total due today"}
+                </dt>
                 <dd className="font-display text-xl font-bold text-gold-600 dark:text-gold-400">
-                  ₹{total.toLocaleString("en-IN")}
+                  ₹{formatINR(plan.price)}
                 </dd>
               </div>
             </dl>
@@ -116,9 +147,16 @@ export function PaymentDialog({ plan, period, open, onOpenChange }: PaymentDialo
             <Button
               size="lg"
               onClick={handleDemoPay}
-              className="btn-gold-shimmer mt-5 w-full font-semibold opacity-80 transition-opacity hover:opacity-100"
+              disabled={paying}
+              className="btn-gold-shimmer mt-5 w-full font-semibold opacity-90 transition-opacity hover:opacity-100"
             >
-              Pay ₹{total.toLocaleString("en-IN")} (Demo)
+              {paying ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Activating…
+                </>
+              ) : (
+                `Pay ₹${formatINR(plan.price)} (Demo)`
+              )}
             </Button>
 
             {/* Trust microcopy */}

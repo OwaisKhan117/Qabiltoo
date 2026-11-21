@@ -571,7 +571,7 @@ export function MatchesView({
               <p className="mb-4 text-sm text-muted-foreground">
                 {viewsData.total} {viewsData.total === 1 ? "member has" : "members have"} viewed your
                 profile recently.
-                {user.tier !== "Gold" && user.tier !== "Platinum" && " Upgrade to reveal every visitor."}
+                {user.tier !== "Gold" && user.tier !== "Assisted" && user.tier !== "Unlimited" && " Upgrade to reveal every visitor."}
               </p>
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {viewsData.viewers.map((v) =>

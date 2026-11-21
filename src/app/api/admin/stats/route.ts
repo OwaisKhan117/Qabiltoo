@@ -22,7 +22,7 @@ export async function GET() {
       db.interest.count({ where: { status: "accepted" } }),
       db.interest.count(),
       db.message.count(),
-      db.profile.count({ where: { tier: { in: ["Gold", "Platinum"] } } }),
+      db.profile.count({ where: { tier: { in: ["Gold", "Assisted", "Unlimited"] } } }),
     ]);
 
     const allProfiles = await db.profile.findMany({

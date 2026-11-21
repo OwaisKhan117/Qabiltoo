@@ -9,7 +9,7 @@ export const FAQ_ITEMS: { q: string; a: string }[] = [
   },
   {
     q: "How is my wali or a family member involved?",
-    a: "Any paid membership includes free guardian access: a parent or wali gets their own dashboard where they can shortlist profiles, review incoming proposals and coordinate introductions with the other family. You choose what your guardian can see, and proposals open conversations between families — not just two individuals.",
+    a: "Families are at the heart of every nikah, so Qabiltoo is built family-first: proposals open respectful conversations between families, guardian (wali) details are part of every profile, and our Assisted plans add a dedicated relationship manager with weekly hand-picked matches and family coordination calls. You always choose what your family sees.",
   },
   {
     q: "What is the difference between a proposal and a chat?",
@@ -17,11 +17,11 @@ export const FAQ_ITEMS: { q: string; a: string }[] = [
   },
   {
     q: "What is the refund policy?",
-    a: "If a technical fault stopped you from using a paid membership, contact us within 7 days of payment for a full refund. After that, memberships can be paused instead of refunded — your remaining days are preserved until you resume. Guardian access, verification badges and the free tier are always without charge.",
+    a: "If a technical fault stopped you from using a paid membership, contact us within 7 days of payment for a full refund. After that, memberships can be paused instead of refunded — your remaining days are preserved until you resume. Verification badges and the free tier are always without charge.",
   },
   {
     q: "Is Qabiltoo really free to use?",
-    a: "Yes — browsing, discovering profiles, five proposals a month, verification badges and guardian access are all free, forever. Paid memberships (Silver, Gold, Platinum) add capacity, advanced filters, full viewer visibility and matchmaking services. We never gate a profile's dignity behind a payment.",
+    a: "Yes — browsing, discovering profiles, sending proposals and earning verification badges are all free, forever. Paid memberships (Silver, Gold, Assisted and Unlimited) add chat, contact-detail unlocks, advanced filters, viewer visibility and matchmaking services. We never gate a profile's dignity behind a payment.",
   },
   {
     q: "Which countries do you support?",

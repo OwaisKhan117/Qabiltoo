@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
  * GET /api/views?profileId=X
  * Returns viewers of a profile, most recent first.
  * `locked` = viewer identity hidden behind premium paywall.
- * Rule: Free/Silver members see 1 teaser unlocked; Gold/Platinum see all.
+ * Rule: Free/Silver members see 1 teaser unlocked; Gold/Assisted/Unlimited see all.
  */
 export async function GET(req: NextRequest) {
   try {
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const premium = tier === "Gold" || tier === "Platinum";
+    const premium = tier === "Gold" || tier === "Assisted" || tier === "Unlimited";
 
     const viewers = views.map((v, i) => ({
       viewer: serializeProfile(v.viewer),
