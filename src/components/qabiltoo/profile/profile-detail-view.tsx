@@ -19,6 +19,7 @@ import {
   Heart,
   Loader2,
   MapPin,
+  MessageCircle,
   Moon,
   MoonStar,
   PencilLine,
@@ -56,7 +57,7 @@ import { VerificationBadge } from "../shared/verification-badge";
 import { TrustRing } from "../shared/trust-ring";
 import { useAuthStore } from "@/lib/qabiltoo/store";
 import { toast } from "@/hooks/use-toast";
-import { displayName, initialsOf, timeAgo, type Profile, type View } from "@/lib/qabiltoo/types";
+import { displayName, timeAgo, type Profile, type View } from "@/lib/qabiltoo/types";
 import { cn } from "@/lib/utils";
 
 /* ── Props ──────────────────────────────────────────────────────────── */
@@ -127,8 +128,11 @@ function DetailPhoto({
   className?: string;
   onClick?: () => void;
 }) {
-  const [src, setSrc] = useState(profile.image || profile.photos[0] || "");
-  const fallback = `/api/avatar/${initialsOf(profile.fullName) || "QT"}`;
+  const fallback = "/images/avatar-placeholder.svg";
+  const [src, setSrc] = useState(() => {
+    const initial = profile.image || profile.photos[0] || "";
+    return initial && !initial.startsWith("/api/avatar/") ? initial : fallback;
+  });
 
   return (
     <div
@@ -228,6 +232,19 @@ export function ProfileDetailView({
       return res.json();
     },
   });
+
+  /* ── Chat entry (paid plans only — the chat view enforces the gate) ── */
+
+  function onMessage(p: Profile) {
+    if (!user) {
+      toast({
+        title: "Sign in to chat",
+        description: "Create your free profile or sign in to begin a respectful conversation.",
+      });
+      return;
+    }
+    navigate({ name: "chat", withId: p.id });
+  }
 
   /* ── Report submit ───────────────────────────────────────────────── */
 
@@ -352,7 +369,9 @@ export function ProfileDetailView({
     { icon: Sparkles, label: "Religious Level", value: profile.religiousLevel || "—" },
     { icon: Moon, label: "Namaz", value: profile.namaz || "—" },
     { icon: BookOpen, label: "Quran", value: profile.quranLevel || "—" },
-    { icon: Shirt, label: isFemale ? "Hijab" : "Beard", value: profile.hijabBeard || "—" },
+    ...(isFemale
+      ? [{ icon: Shirt, label: "Hijab", value: profile.hijabBeard || "—" }]
+      : []),
   ].filter((item) => item.value !== "—");
 
   return (
@@ -562,6 +581,17 @@ export function ProfileDetailView({
                       )}
                     </Button>
                   </motion.div>
+                )}
+                {!isOwnProfile && (
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    onClick={() => onMessage(profile)}
+                    className="h-13 rounded-full border-gold-500/50 text-gold-700 hover:bg-gold-500/10 dark:text-gold-400"
+                  >
+                    <MessageCircle className="h-5 w-5" aria-hidden />
+                    {user && user.tier === "Free" ? "Upgrade to Chat" : "Message"}
+                  </Button>
                 )}
                 <Button
                   size="lg"

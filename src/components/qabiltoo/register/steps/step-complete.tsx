@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Gem, HeartHandshake, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Gem, HeartHandshake, ShieldCheck, Sparkles, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LightMotes } from "../../shared/light-motes";
+import { useAuthStore } from "@/lib/qabiltoo/store";
 import type { OnboardingData } from "../onboarding";
 import type { View } from "@/lib/qabiltoo/types";
 
@@ -29,6 +31,14 @@ const NEXT_STEPS = [
 export function StepComplete({ data, navigate }: { data: OnboardingData; navigate: (v: View) => void }) {
   const firstName = data.fullName.trim().split(/\s+/)[0] || "friend";
   const reduce = useReducedMotion();
+  const userId = useAuthStore((s) => s.user?.id);
+
+  /* Registration complete → land the user on their own profile page */
+  useEffect(() => {
+    if (!userId) return;
+    const t = setTimeout(() => navigate({ name: "profile", id: userId }), 4000);
+    return () => clearTimeout(t);
+  }, [userId, navigate]);
 
   return (
     <section
@@ -87,10 +97,11 @@ export function StepComplete({ data, navigate }: { data: OnboardingData; navigat
             size="lg"
             className="btn-gold-shimmer rounded-full px-8"
             onClick={() =>
-              navigate({ name: "browse", gender: data.gender === "female" ? "male" : "female" })
+              userId ? navigate({ name: "profile", id: userId }) : navigate({ name: "browse" })
             }
           >
-            Discover Profiles <ArrowRight className="h-4 w-4" aria-hidden />
+            <UserRound className="h-4 w-4" aria-hidden /> Go to My Profile
+            <ArrowRight className="h-4 w-4" aria-hidden />
           </Button>
           <Button
             size="lg"
@@ -101,6 +112,11 @@ export function StepComplete({ data, navigate }: { data: OnboardingData; navigat
             <ShieldCheck className="h-4 w-4" aria-hidden /> Complete Trust Centre
           </Button>
         </div>
+        {userId && (
+          <p className="mt-4 text-xs text-muted-foreground">
+            Taking you to your profile in a moment…
+          </p>
+        )}
       </div>
     </section>
   );

@@ -3,11 +3,14 @@
 import Image from "next/image";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { initialsOf, timeAgo, type Profile } from "@/lib/qabiltoo/types";
+import { timeAgo, type Profile } from "@/lib/qabiltoo/types";
+
+/** Default placeholder shown wherever a portrait is missing. */
+export const AVATAR_PLACEHOLDER = "/images/avatar-placeholder.svg";
 
 /**
- * Graceful profile photo with automatic /api/avatar fallback when a
- * portrait file is missing from disk (seeded images generate async).
+ * Graceful profile photo with automatic placeholder fallback when a
+ * portrait file is missing from disk.
  */
 export function ProfilePhoto({
   profile,
@@ -23,8 +26,9 @@ export function ProfilePhoto({
   className?: string;
 }) {
   const [broken, setBroken] = useState(false);
-  const fallback = `/api/avatar/${encodeURIComponent(initialsOf(profile.fullName) || "QT")}`;
-  const src = !profile.image || broken ? fallback : profile.image;
+  const initial =
+    profile.image && !profile.image.startsWith("/api/avatar/") ? profile.image : "";
+  const src = !initial || broken ? AVATAR_PLACEHOLDER : initial;
 
   return (
     <Image

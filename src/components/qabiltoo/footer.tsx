@@ -110,7 +110,6 @@ export function Footer({ navigate }: FooterProps) {
                   { label: "Frequently Asked Questions", view: { name: "info", page: "faq" } as View },
                   { label: "About Qabiltoo", view: { name: "info", page: "about" } as View },
                   { label: "Contact & Help", view: { name: "info", page: "contact" } as View },
-                  { label: "Guardian Console", view: { name: "guardian" } as View },
                 ] as const
               ).map((item) => (
                 <li key={item.label}>

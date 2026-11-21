@@ -5,7 +5,6 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { Briefcase, Eye, Lock, MapPin } from "lucide-react";
 import { VerificationBadge } from "../shared/verification-badge";
-import { initialsOf } from "@/lib/qabiltoo/types";
 import { cn } from "@/lib/utils";
 import type { OnboardingData } from "./onboarding";
 
@@ -37,7 +36,6 @@ function FadeText({ k, className, children }: { k: string; className?: string; c
  */
 export function PreviewCard({ data, className }: { data: OnboardingData; className?: string }) {
   const name = data.fullName.trim() || "Your Name";
-  const initials = initialsOf(data.fullName) || "QT";
   const showUpload = data.photoOption === "upload" && !!data.photoDataUrl;
   const metaBits = [
     data.age ? `${data.age} yrs` : "",
@@ -62,7 +60,7 @@ export function PreviewCard({ data, className }: { data: OnboardingData; classNa
       </div>
 
       <div className="px-5 pb-5 pt-5 text-center">
-        {/* Arch-framed photo / initials avatar */}
+        {/* Arch-framed photo / default placeholder */}
         <div className="relative mx-auto h-24 w-20 overflow-hidden rounded-t-[2.5rem] rounded-b-xl border-2 border-gold-500/50 bg-gold-500/5 shadow-md shadow-gold-500/10">
           {showUpload ? (
             <LocalPhoto
@@ -72,8 +70,8 @@ export function PreviewCard({ data, className }: { data: OnboardingData; classNa
             />
           ) : (
             <Image
-              src={`/api/avatar/${encodeURIComponent(initials)}`}
-              alt="Initials avatar preview"
+              src="/images/avatar-placeholder.svg"
+              alt="Default profile photo placeholder"
               fill
               sizes="80px"
               className="object-cover"

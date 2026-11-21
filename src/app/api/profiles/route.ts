@@ -13,6 +13,7 @@ export async function GET(req: NextRequest) {
     const minAge = sp.get("minAge") ? Number(sp.get("minAge")) : undefined;
     const maxAge = sp.get("maxAge") ? Number(sp.get("maxAge")) : undefined;
     const city = sp.get("city")?.trim();
+    const state = sp.get("state")?.trim();
     const country = sp.get("country")?.trim();
     const maritalStatus = sp.get("maritalStatus") ?? undefined;
     const sect = sp.get("sect") ?? undefined;
@@ -21,15 +22,33 @@ export async function GET(req: NextRequest) {
     const income = sp.get("income") ?? undefined;
     const relocate = sp.get("relocate");
     const verificationTier = sp.get("verificationTier") ?? undefined;
+    const viewerId = sp.get("viewerId")?.trim();
     const sort = sp.get("sort") ?? "recent";
     const page = Math.max(1, Number(sp.get("page") ?? 1));
     const limit = Math.min(48, Math.max(1, Number(sp.get("limit") ?? 12)));
 
+    /* ── Visibility rules (applied at query level) ─────────────────────
+       1. Gender: a signed-in groom sees only brides, a bride only grooms —
+          any requested gender filter that contradicts this is overridden.
+       2. City: profiles from the viewer's own city are ranked FIRST
+          (priority ordering, not exclusion).                                   */
+    const viewer = viewerId
+      ? await db.profile.findUnique({ where: { id: viewerId } })
+      : null;
+    const viewerGender = viewer?.gender === "male" ? "male" : viewer?.gender === "female" ? "female" : null;
+    const oppositeGender =
+      viewerGender === "male" ? "female" : viewerGender === "female" ? "male" : null;
+
     const where: Record<string, unknown> = {};
-    if (gender === "male" || gender === "female") where.gender = gender;
+    if (oppositeGender) {
+      where.gender = oppositeGender;
+    } else if (gender === "male" || gender === "female") {
+      where.gender = gender; // anonymous visitors may browse freely
+    }
     if (maritalStatus) where.maritalStatus = maritalStatus;
     if (sect) where.sect = sect;
     if (city) where.city = { contains: city };
+    if (state) where.state = { contains: state };
     if (country) where.country = country;
     if (education) where.education = { contains: education };
     if (profession) where.profession = { contains: profession };
@@ -62,21 +81,30 @@ export async function GET(req: NextRequest) {
           ? { lastActive: "desc" as const }
           : { createdAt: "desc" as const };
 
+    // Demo-scale dataset: fetch the filtered set, apply city-priority ranking
+    // server-side, then paginate. Gender filtering itself happens in the WHERE.
     const [rows, total] = await Promise.all([
-      db.profile.findMany({
-        where,
-        orderBy,
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
+      db.profile.findMany({ where, orderBy, take: 200 }),
       db.profile.count({ where }),
     ]);
 
+    const ranked = viewer?.city
+      ? [...rows].sort((a, b) => {
+          const aLocal = a.city === viewer.city ? 0 : 1;
+          const bLocal = b.city === viewer.city ? 0 : 1;
+          return aLocal - bLocal; // stable sort keeps the orderBy order within groups
+        })
+      : rows;
+
+    const pageRows = ranked.slice((page - 1) * limit, page * limit);
+
     return NextResponse.json({
-      profiles: rows.map(serializeProfile),
+      profiles: pageRows.map(serializeProfile),
       total,
       page,
       totalPages: Math.max(1, Math.ceil(total / limit)),
+      viewerGender: viewerGender ?? null,
+      cityPriority: Boolean(viewer?.city),
     });
   } catch (error) {
     console.error("GET /api/profiles error:", error);

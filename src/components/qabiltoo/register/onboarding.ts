@@ -1,6 +1,6 @@
 /* ── Onboarding shared types, constants & helpers ──────────── */
 
-import { initialsOf, type OnBehalfOf } from "@/lib/qabiltoo/types";
+import { type OnBehalfOf } from "@/lib/qabiltoo/types";
 
 export interface OnboardingData {
   /* step 1 */
@@ -30,7 +30,7 @@ export interface OnboardingData {
   about: string;
   partnerPreference: string;
   /* step 6 — uploaded dataURL stays client-side ONLY, never sent to API */
-  photoOption: "initials" | "upload";
+  photoOption: "none" | "upload";
   photoDataUrl: string;
   /* step 7 — demo only */
   idFileName: string;
@@ -59,7 +59,7 @@ export const DEFAULT_DATA: OnboardingData = {
   familyInfo: "",
   about: "",
   partnerPreference: "",
-  photoOption: "initials",
+  photoOption: "none",
   photoDataUrl: "",
   idFileName: "",
   idVerified: false,
@@ -98,8 +98,8 @@ export function validateStep(step: number, d: OnboardingData): Record<string, st
       e.age = "Age should be between 18 and 80.";
     }
     if (!d.height) e.height = "Please select a height.";
-    if (d.city.trim().length < 2) e.city = "Please enter a city.";
-    if (d.state.trim().length < 2) e.state = "Please enter a state.";
+    if (d.city.trim().length < 2) e.city = "Please choose a city.";
+    if (d.state.trim().length < 2) e.state = "Please choose a state.";
   }
 
   if (step === 4) {
@@ -107,7 +107,8 @@ export function validateStep(step: number, d: OnboardingData): Record<string, st
     if (!d.religiousLevel) e.religiousLevel = "Please choose one.";
     if (!d.namaz) e.namaz = "Please choose one.";
     if (!d.quranLevel) e.quranLevel = "Please choose one.";
-    if (!d.hijabBeard) e.hijabBeard = "Please choose one.";
+    // Hijab is asked of brides; the beard field has been removed from Qabiltoo.
+    if (d.gender === "female" && !d.hijabBeard) e.hijabBeard = "Please choose one.";
   }
 
   if (step === 5) {
@@ -123,7 +124,7 @@ export function validateStep(step: number, d: OnboardingData): Record<string, st
 
 /** Build the POST /api/profiles body. Photos are always path strings, never base64. */
 export function buildPayload(d: OnboardingData) {
-  const image = `/api/avatar/${initialsOf(d.fullName) || "QT"}`;
+  const image = "/images/avatar-placeholder.svg";
   return {
     fullName: d.fullName.trim(),
     gender: d.gender as "male" | "female",
@@ -140,7 +141,7 @@ export function buildPayload(d: OnboardingData) {
     religiousLevel: d.religiousLevel || null,
     namaz: d.namaz || null,
     quranLevel: d.quranLevel || null,
-    hijabBeard: d.hijabBeard || null,
+    hijabBeard: d.gender === "female" ? d.hijabBeard || null : null,
     about: d.about.trim(),
     partnerPreference: d.partnerPreference.trim() || null,
     familyInfo: d.familyInfo.trim() || null,

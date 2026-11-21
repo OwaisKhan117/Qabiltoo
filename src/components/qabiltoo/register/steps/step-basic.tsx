@@ -12,9 +12,23 @@ import { Switch } from "@/components/ui/switch";
 import { Field, StepNav } from "../kit";
 import { HEIGHTS, type StepProps } from "../onboarding";
 import { MARITAL_STATUSES } from "@/lib/qabiltoo/types";
+import { INDIA_STATES, citiesForState } from "@/lib/qabiltoo/india-locations";
 
 /** Step 3 — Basic information */
 export function StepBasic({ data, update, errors, onNext, onBack }: StepProps) {
+  const selectedState = data.state || "";
+  const cityOptions = selectedState ? citiesForState(selectedState) : [];
+
+  function handleStateChange(nextState: string) {
+    const staysValid = nextState === selectedState;
+    const cityStillInState = !staysValid && citiesForState(nextState).includes(data.city);
+    update({
+      state: nextState,
+      // Reset the city when the state changed and the old city is not in the new state
+      city: staysValid ? data.city : cityStillInState ? data.city : "",
+    });
+  }
+
   return (
     <section aria-labelledby="step-basic-h">
       <h2 id="step-basic-h" className="font-display text-2xl font-bold sm:text-3xl">
@@ -61,24 +75,38 @@ export function StepBasic({ data, update, errors, onNext, onBack }: StepProps) {
           </Select>
         </Field>
 
-        <Field label="City" htmlFor="ob-city" error={errors.city}>
-          <Input
-            id="ob-city"
-            placeholder="e.g. Mumbai"
-            autoComplete="address-level2"
-            value={data.city}
-            onChange={(e) => update({ city: e.target.value })}
-          />
+        <Field label="State" htmlFor="ob-state" error={errors.state}>
+          <Select value={selectedState} onValueChange={handleStateChange}>
+            <SelectTrigger aria-label="Select state">
+              <SelectValue placeholder="Select state" />
+            </SelectTrigger>
+            <SelectContent className="max-h-64">
+              {INDIA_STATES.map((s) => (
+                <SelectItem key={s.state} value={s.state}>
+                  {s.state}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Field>
 
-        <Field label="State" htmlFor="ob-state" error={errors.state}>
-          <Input
-            id="ob-state"
-            placeholder="e.g. Maharashtra"
-            autoComplete="address-level1"
-            value={data.state}
-            onChange={(e) => update({ state: e.target.value })}
-          />
+        <Field label="City" htmlFor="ob-city" error={errors.city} hint={selectedState ? undefined : "Choose a state first"}>
+          <Select
+            value={data.city || ""}
+            onValueChange={(v) => update({ city: v })}
+            disabled={!selectedState}
+          >
+            <SelectTrigger aria-label="Select city">
+              <SelectValue placeholder={selectedState ? "Select city" : "Select a state first"} />
+            </SelectTrigger>
+            <SelectContent className="max-h-64">
+              {cityOptions.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Field>
 
         <Field label="Marital status">

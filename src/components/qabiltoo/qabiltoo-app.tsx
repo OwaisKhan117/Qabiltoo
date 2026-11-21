@@ -13,7 +13,6 @@ import { SendInterestDialog } from "./profile/send-interest-dialog";
 import { RegisterView } from "./register/register-view";
 import { MatchesView } from "./matches/matches-view";
 import { ChatView } from "./chat/chat-view";
-import { GuardianView } from "./guardian/guardian-view";
 import { TrustView } from "./trust/trust-view";
 import { PricingView } from "./pricing/pricing-view";
 import { StoriesView } from "./stories-page/stories-view";
@@ -199,7 +198,6 @@ function QabiltooShell() {
 
         {view.name === "chat" && <ChatView navigate={navigate} withId={view.withId} />}
 
-        {view.name === "guardian" && <GuardianView navigate={navigate} />}
 
         {view.name === "trust" && <TrustView navigate={navigate} />}
 
@@ -221,10 +219,10 @@ function QabiltooShell() {
         onOpenChange={setAuthOpen}
         onGoRegister={() => navigate({ name: "register" })}
         onLoggedIn={(profile) => {
-          navigate({ name: "browse" });
+          navigate({ name: "profile", id: profile.id });
           toast({
             title: `Assalamu Alaikum, ${profile.fullName.split(" ")[0]}`,
-            description: "You are signed in. Your journey to nikah awaits — barakallahu feek!",
+            description: "You are signed in — this is your profile.",
           });
         }}
       />

@@ -225,7 +225,6 @@ export type View =
   | { name: "interests" }
   | { name: "profile"; id: string }
   | { name: "chat"; withId?: string }
-  | { name: "guardian" }
   | { name: "trust" }
   | { name: "pricing" }
   | { name: "stories" }

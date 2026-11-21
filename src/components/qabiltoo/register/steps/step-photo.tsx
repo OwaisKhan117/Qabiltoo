@@ -4,18 +4,16 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { Check, ImagePlus, Lock, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { initialsOf } from "@/lib/qabiltoo/types";
 import { cn } from "@/lib/utils";
 import { StepNav } from "../kit";
 import { LocalPhoto } from "../preview-card";
 import type { StepProps } from "../onboarding";
 
-/** Step 6 — Photograph (upload stays on-device; initials avatar as the elegant default) */
+/** Step 6 — Photograph (upload stays on-device; default placeholder when none) */
 export function StepPhoto({ data, update, onNext, onBack }: StepProps) {
   const [dragging, setDragging] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const initials = initialsOf(data.fullName) || "QT";
   const hasUpload = data.photoOption === "upload" && !!data.photoDataUrl;
 
   function loadFile(file: File | undefined) {
@@ -43,7 +41,8 @@ export function StepPhoto({ data, update, onNext, onBack }: StepProps) {
       </h2>
       <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
         A photo helps serious families connect — yet your modesty is respected: photos stay
-        private and blurred until you accept a proposal.
+        private and blurred until you accept a proposal. Prefer not to share one yet? A graceful
+        placeholder represents you until you are ready.
       </p>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -102,13 +101,13 @@ export function StepPhoto({ data, update, onNext, onBack }: StepProps) {
                   aria-label="Remove selected photograph"
                   onClick={(e) => {
                     e.stopPropagation();
-                    update({ photoDataUrl: "", photoOption: "initials" });
+                    update({ photoDataUrl: "", photoOption: "none" });
                     if (fileRef.current) fileRef.current.value = "";
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
                       e.stopPropagation();
-                      update({ photoDataUrl: "", photoOption: "initials" });
+                      update({ photoDataUrl: "", photoOption: "none" });
                       if (fileRef.current) fileRef.current.value = "";
                     }
                   }}
@@ -137,41 +136,38 @@ export function StepPhoto({ data, update, onNext, onBack }: StepProps) {
           />
         </div>
 
-        {/* (b) Elegant initials avatar */}
-        <button
-          type="button"
-          onClick={() => update({ photoOption: "initials" })}
-          aria-pressed={data.photoOption === "initials"}
+        {/* (b) Default placeholder — shown until a photo is added */}
+        <div
           className={cn(
             "flex flex-col rounded-3xl border-2 bg-card p-5 text-left transition-colors",
-            data.photoOption === "initials"
+            !hasUpload
               ? "border-gold-500 shadow-[0_0_0_3px_rgba(212,175,55,0.14)]"
-              : "border-border hover:border-gold-500/40"
+              : "border-border"
           )}
         >
           <span className="flex items-center justify-between gap-2">
-            <span className="font-display text-base font-semibold">Initials avatar</span>
-            {data.photoOption === "initials" && (
+            <span className="font-display text-base font-semibold">Use default placeholder</span>
+            {!hasUpload && (
               <span className="inline-flex items-center gap-1 rounded-full bg-gold-500/15 px-2 py-0.5 text-[11px] font-medium text-gold-700 dark:text-gold-300">
-                <Check className="h-3 w-3" aria-hidden /> Chosen
+                <Check className="h-3 w-3" aria-hidden /> Selected
               </span>
             )}
           </span>
           <span className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            A refined gold emblem with your initials — elegant, private and always appropriate.
+            An elegant emblem stands in for you — add a photograph anytime from your profile.
           </span>
           <span className="mt-4 flex flex-1 items-center justify-center">
             <span className="relative block h-24 w-24 overflow-hidden rounded-2xl border-2 border-gold-500/50 shadow-md shadow-gold-500/10">
               <Image
-                src={`/api/avatar/${encodeURIComponent(initials)}`}
-                alt="Initials avatar preview"
+                src="/images/avatar-placeholder.svg"
+                alt="Default profile photo placeholder"
                 fill
                 sizes="96px"
                 className="object-cover"
               />
             </span>
           </span>
-        </button>
+        </div>
       </div>
 
       <p className="mt-5 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">

@@ -35,6 +35,8 @@ import {
 import { CuratedProfileCard, ProfileCard, ProfileCardRow } from "./profile-card";
 import { PatternOverlay } from "../pattern";
 import { SectionHeading } from "../shared/section-heading";
+import { useAuthStore } from "@/lib/qabiltoo/store";
+import { ALL_CITIES, INDIA_STATES, citiesForState } from "@/lib/qabiltoo/india-locations";
 import { VERIFICATION_TIER_META } from "@/lib/qabiltoo/types";
 import {
   INCOME_BRACKETS,
@@ -64,6 +66,7 @@ interface Filters {
   gender: string;
   ageMin: string;
   ageMax: string;
+  state: string;
   city: string;
   country: string;
   maritalStatus: string;
@@ -81,6 +84,7 @@ const DEFAULT_FILTERS: Filters = {
   gender: "all",
   ageMin: "18",
   ageMax: "75",
+  state: "all",
   city: "all",
   country: "all",
   maritalStatus: "all",
@@ -136,6 +140,7 @@ export function BrowseView({
   onSendInterest,
   interestedIds,
 }: BrowseViewProps) {
+  const user = useAuthStore((s) => s.user);
   const [filters, setFilters] = useState<Filters>(() => ({
     ...DEFAULT_FILTERS,
     gender: initialGender ?? DEFAULT_FILTERS.gender,
@@ -147,10 +152,17 @@ export function BrowseView({
   const debouncedQ = useDebouncedValue(filters.q, 300);
   const debouncedEducation = useDebouncedValue(filters.education, 300);
   const debouncedProfession = useDebouncedValue(filters.profession, 300);
+  const viewerId = user?.id;
   const carouselRef = useRef<HTMLDivElement>(null);
 
   function updateFilter<K extends keyof Filters>(key: K, value: Filters[K]) {
-    setFilters((f) => ({ ...f, [key]: value }));
+    setFilters((f) => {
+      // Reset the city when the state changes (cascading location filters)
+      if (key === "state" && value !== f.state) {
+        return { ...f, state: value as string, city: "all" };
+      }
+      return { ...f, [key]: value };
+    });
     setPage(1);
   }
 
@@ -166,6 +178,7 @@ export function BrowseView({
     if (filters.gender === "male" || filters.gender === "female") sp.set("gender", filters.gender);
     if (Number(filters.ageMin) > 18) sp.set("minAge", filters.ageMin);
     if (Number(filters.ageMax) < 75) sp.set("maxAge", filters.ageMax);
+    if (filters.state !== "all") sp.set("state", filters.state);
     if (filters.city !== "all") sp.set("city", filters.city);
     if (filters.country !== "all") sp.set("country", filters.country);
     if (filters.maritalStatus !== "all") sp.set("maritalStatus", filters.maritalStatus);
@@ -173,6 +186,7 @@ export function BrowseView({
     if (filters.income !== "all") sp.set("income", filters.income);
     if (filters.relocate) sp.set("relocate", "true");
     if (filters.verificationTier !== "all") sp.set("verificationTier", filters.verificationTier);
+    if (viewerId) sp.set("viewerId", viewerId); // server-side gender + city-priority rules
     if (debouncedQ.trim()) sp.set("q", debouncedQ.trim());
     if (debouncedEducation.trim()) sp.set("education", debouncedEducation.trim());
     if (debouncedProfession.trim()) sp.set("profession", debouncedProfession.trim());
@@ -180,7 +194,7 @@ export function BrowseView({
     sp.set("page", String(page));
     sp.set("limit", String(PAGE_SIZE));
     return sp.toString();
-  }, [filters, page, debouncedQ, debouncedEducation, debouncedProfession]);
+  }, [filters, page, debouncedQ, debouncedEducation, debouncedProfession, viewerId]);
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery({
     queryKey: ["profiles", queryString],
@@ -192,11 +206,12 @@ export function BrowseView({
     placeholderData: (prev) => prev,
   });
 
-  // Curated "Today's Matches" — highest trust scores
+  // Curated "Today's Matches" — highest trust scores (same visibility rules)
   const { data: curated } = useQuery({
-    queryKey: ["profiles", "curated-trust"],
+    queryKey: ["profiles", "curated-trust", viewerId],
     queryFn: async (): Promise<ProfilesResponse> => {
-      const res = await fetch("/api/profiles?sort=trust&limit=8");
+      const vp = viewerId ? `&viewerId=${encodeURIComponent(viewerId)}` : "";
+      const res = await fetch(`/api/profiles?sort=trust&limit=8${vp}`);
       if (!res.ok) throw new Error("Failed to fetch curated profiles");
       return res.json();
     },
@@ -229,8 +244,9 @@ export function BrowseView({
 
   const activeFilterCount = useMemo(() => {
     let count = 0;
-    if (filters.gender !== "all") count++;
+    if (filters.gender !== "all" && !user) count++;
     if (Number(filters.ageMin) > 18 || Number(filters.ageMax) < 75) count++;
+    if (filters.state !== "all") count++;
     if (filters.city !== "all") count++;
     if (filters.country !== "all") count++;
     if (filters.maritalStatus !== "all") count++;
@@ -304,14 +320,38 @@ export function BrowseView({
       </div>
 
       <div className="space-y-2">
+        <Label>State</Label>
+        <Select value={filters.state} onValueChange={(v) => updateFilter("state", v)}>
+          <SelectTrigger aria-label="State">
+            <SelectValue placeholder="Any state" />
+          </SelectTrigger>
+          <SelectContent className="max-h-60">
+            <SelectItem value="all">Any state</SelectItem>
+            {INDIA_STATES.map((s) => (
+              <SelectItem key={s.state} value={s.state}>
+                {s.state}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
         <Label>City</Label>
-        <Select value={filters.city} onValueChange={(v) => updateFilter("city", v)}>
+        <Select
+          value={filters.city}
+          onValueChange={(v) => updateFilter("city", v)}
+          disabled={filters.state !== "all" && citiesForState(filters.state).length === 0}
+        >
           <SelectTrigger aria-label="City">
             <SelectValue placeholder="Any city" />
           </SelectTrigger>
           <SelectContent className="max-h-60">
             <SelectItem value="all">Any city</SelectItem>
-            {(stats?.cityNames ?? []).map((city) => (
+            {(filters.state !== "all"
+              ? citiesForState(filters.state)
+              : Array.from(new Set([...ALL_CITIES, ...(stats?.cityNames ?? [])])).sort()
+            ).map((city) => (
               <SelectItem key={city} value={city}>
                 {city}
               </SelectItem>
@@ -491,23 +531,35 @@ export function BrowseView({
                 aria-label="Search profiles"
               />
             </div>
-            <div className="flex gap-1.5 rounded-full bg-white/10 p-1 backdrop-blur" role="tablist" aria-label="Gender filter">
-              {genderTabs.map((tab) => (
-                <button
-                  key={tab.value}
-                  role="tab"
-                  aria-selected={filters.gender === tab.value}
-                  onClick={() => updateFilter("gender", tab.value)}
-                  className={cn(
-                    "rounded-full px-4 py-1.5 text-sm font-semibold transition-all",
-                    filters.gender === tab.value
-                      ? "bg-white text-primary shadow"
-                      : "text-white/80 hover:text-white"
-                  )}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            <div
+              className="flex gap-1.5 rounded-full bg-white/10 p-1 backdrop-blur"
+              role="tablist"
+              aria-label="Gender filter"
+            >
+              {user ? (
+                <span className="flex items-center gap-1.5 rounded-full bg-white/15 px-4 py-1.5 text-sm font-semibold text-white">
+                  <Sparkles className="h-3.5 w-3.5 text-gold-300" aria-hidden />
+                  Showing {user.gender === "male" ? "brides" : "grooms"}
+                  {user.city ? ` near ${user.city}` : ""}
+                </span>
+              ) : (
+                genderTabs.map((tab) => (
+                  <button
+                    key={tab.value}
+                    role="tab"
+                    aria-selected={filters.gender === tab.value}
+                    onClick={() => updateFilter("gender", tab.value)}
+                    className={cn(
+                      "rounded-full px-4 py-1.5 text-sm font-semibold transition-all",
+                      filters.gender === tab.value
+                        ? "bg-white text-primary shadow"
+                        : "text-white/80 hover:text-white"
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))
+              )}
             </div>
             <div className="lg:ml-auto">
               <div

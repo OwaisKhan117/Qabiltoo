@@ -20,10 +20,6 @@ import {
 /** Step 4 — Faith & practice */
 export function StepFaith({ data, update, errors, onNext, onBack }: StepProps) {
   const isFemale = data.gender === "female";
-  const hbLabel = isFemale ? "Hijab" : "Beard";
-  const hbQuestion = isFemale
-    ? "Do you observe hijab?"
-    : "Do you keep a beard?";
 
   return (
     <section aria-labelledby="step-faith-h">
@@ -102,23 +98,25 @@ export function StepFaith({ data, update, errors, onNext, onBack }: StepProps) {
           </Select>
         </Field>
 
-        <Field label={hbLabel} error={errors.hijabBeard} hint={hbQuestion} className="sm:col-span-2">
-          <Select
-            value={data.hijabBeard || ""}
-            onValueChange={(v) => update({ hijabBeard: v })}
-          >
-            <SelectTrigger aria-label={`Select ${hbLabel.toLowerCase()} practice`}>
-              <SelectValue placeholder="Select one" />
-            </SelectTrigger>
-            <SelectContent>
-              {HIJAB_BEARD_OPTIONS.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
+        {isFemale && (
+          <Field label="Hijab" error={errors.hijabBeard} hint="Do you observe hijab?" className="sm:col-span-2">
+            <Select
+              value={data.hijabBeard || ""}
+              onValueChange={(v) => update({ hijabBeard: v })}
+            >
+              <SelectTrigger aria-label="Select hijab practice">
+                <SelectValue placeholder="Select one" />
+              </SelectTrigger>
+              <SelectContent>
+                {HIJAB_BEARD_OPTIONS.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+        )}
       </div>
 
       <StepNav onNext={onNext} onBack={onBack} />

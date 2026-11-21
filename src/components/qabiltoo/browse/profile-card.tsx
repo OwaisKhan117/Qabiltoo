@@ -18,11 +18,11 @@ import { Badge } from "@/components/ui/badge";
 import { BlurredPhoto } from "../shared/blurred-photo";
 import { VerificationBadge } from "../shared/verification-badge";
 import { ParallaxCard } from "../shared/parallax-card";
-import { displayName, initialsOf, type Profile } from "@/lib/qabiltoo/types";
+import { displayName, type Profile } from "@/lib/qabiltoo/types";
 import { useAuthStore } from "@/lib/qabiltoo/store";
 import { cn } from "@/lib/utils";
 
-/* ── Photo with graceful fallback (missing files → initials avatar) ── */
+/* ── Photo with graceful fallback (missing files → default placeholder) ── */
 
 function ProfilePhoto({
   profile,
@@ -37,12 +37,11 @@ function ProfilePhoto({
   priority?: boolean;
   className?: string;
 }) {
-  const [src, setSrc] = useState(profile.image || profile.photos[0] || "");
-  const fallback = `/api/avatar/${initialsOf(profile.fullName) || "QT"}`;
-
-  if (!src) {
-    return <Image src={fallback} alt={alt} fill sizes={sizes} className={cn("object-cover", className)} />;
-  }
+  const placeholder = "/images/avatar-placeholder.svg";
+  const [src, setSrc] = useState(() => {
+    const initial = profile.image || profile.photos[0] || "";
+    return initial && !initial.startsWith("/api/avatar/") ? initial : placeholder;
+  });
 
   return (
     <Image
@@ -51,7 +50,7 @@ function ProfilePhoto({
       fill
       sizes={sizes}
       priority={priority}
-      onError={() => setSrc(fallback)}
+      onError={() => setSrc(placeholder)}
       className={cn("object-cover", className)}
     />
   );

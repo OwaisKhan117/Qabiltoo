@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BadgeCheck, Gem } from "lucide-react";
 import Image from "next/image";
 import type { AdminStats, VerificationTier } from "@/lib/qabiltoo/types";
-import { VERIFICATION_TIER_META, initialsOf } from "@/lib/qabiltoo/types";
+import { VERIFICATION_TIER_META } from "@/lib/qabiltoo/types";
 import { cn } from "@/lib/utils";
 
 /** Relative time with a spoken suffix: "3m ago", "2h ago", "Mar 3". */
@@ -82,7 +82,8 @@ export function AdminAvatar({
   className?: string;
 }) {
   const [err, setErr] = useState(false);
-  const finalSrc = err ? `/api/avatar/${encodeURIComponent(initialsOf(name))}` : src;
+  const finalSrc =
+    err || !src || src.startsWith("/api/avatar/") ? "/images/avatar-placeholder.svg" : src;
   return (
     <Image
       src={finalSrc}

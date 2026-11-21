@@ -7,6 +7,8 @@ import {
   ArrowLeft,
   Check,
   CheckCheck,
+  Crown,
+  Gem,
   Info,
   MessageCircle,
   Search,
@@ -371,6 +373,55 @@ export function ChatView({ navigate, withId }: { navigate: (v: View) => void; wi
           button in the top bar, or the demo account{" "}
           <span className="font-mono text-foreground/80">ayesha@demo.qabiltoo.in</span>
         </p>
+      </div>
+    );
+  }
+
+  /* ── Paid-plan gate: chat is a premium feature ─────────────────────── */
+  if (user.tier === "Free") {
+    const PERKS = [
+      "Unlimited conversations with accepted matches",
+      "Read receipts and typing indicators",
+      "Photo sharing within private threads",
+      "Video-call requests after mutual acceptance",
+    ] as const;
+    return (
+      <div className="mx-auto max-w-xl px-4 py-16 sm:py-20">
+        <div className="relative overflow-hidden rounded-3xl border border-gold-500/30 bg-card p-8 text-center shadow-xl shadow-gold-500/10 sm:p-10">
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-1.5"
+            style={{ background: "linear-gradient(90deg, transparent, #d4af37, transparent)" }}
+            aria-hidden
+          />
+          <div className="glow-gold mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-gold-400 to-gold-600 shadow-lg shadow-gold-500/40">
+            <Crown className="h-8 w-8 text-white" aria-hidden />
+          </div>
+          <h1 className="mt-5 font-display text-2xl font-bold sm:text-3xl">Upgrade to Chat</h1>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
+            Conversations on Qabiltoo are part of our premium membership — keeping the space
+            sincere, safe and free of noise. Choose a plan to start speaking with your matches.
+          </p>
+          <ul className="mx-auto mt-6 grid max-w-md gap-2.5 text-left">
+            {PERKS.map((perk) => (
+              <li key={perk} className="flex items-start gap-2.5 rounded-xl border border-border bg-background/60 px-4 py-3">
+                <Crown className="mt-0.5 h-4 w-4 shrink-0 text-gold-600 dark:text-gold-400" aria-hidden />
+                <span className="text-sm text-foreground/90">{perk}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button
+              size="lg"
+              className="btn-gold-shimmer rounded-full bg-gold-500 px-8 font-bold text-white hover:bg-gold-600"
+              onClick={() => navigate({ name: "pricing" })}
+            >
+              <Gem className="h-4 w-4" aria-hidden /> View Membership Plans
+            </Button>
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            Silver unlocks chat · Gold adds video calls · Cancel anytime
+          </p>
+        </div>
       </div>
     );
   }

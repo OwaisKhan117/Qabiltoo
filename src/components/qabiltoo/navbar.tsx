@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -13,7 +14,6 @@ import {
   Sparkles,
   Bell,
   MessageCircle,
-  ShieldCheck,
   LayoutDashboard,
   Users,
   HandHeart,
@@ -52,6 +52,7 @@ export function Navbar({ view, navigate, onOpenAuth }: NavbarProps) {
   const links: { label: string; active: boolean; onClick: () => void }[] = [
     { label: "Home", active: view.name === "landing", onClick: () => navigate({ name: "landing" }) },
     { label: "Discover", active: view.name === "browse", onClick: () => navigate({ name: "browse" }) },
+    { label: "Chat", active: view.name === "chat", onClick: () => navigate({ name: "chat" }) },
     { label: "Stories", active: view.name === "stories", onClick: () => navigate({ name: "stories" }) },
     { label: "Pricing", active: view.name === "pricing", onClick: () => navigate({ name: "pricing" }) },
     { label: "Trust & Safety", active: view.name === "trust", onClick: () => navigate({ name: "trust" }) },
@@ -207,8 +208,8 @@ export function Navbar({ view, navigate, onOpenAuth }: NavbarProps) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="hidden gap-2 rounded-full pl-1 pr-3 md:flex">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                        {user.fullName[0]}
+                      <span className="relative flex h-8 w-8 overflow-hidden rounded-full ring-1 ring-gold-500/40">
+                        <Image src="/images/avatar-placeholder.svg" alt="" fill sizes="32px" className="object-cover" />
                       </span>
                       <span className="max-w-[110px] truncate text-sm font-medium">
                         {user.fullName.split(" ")[0]}
@@ -233,9 +234,6 @@ export function Navbar({ view, navigate, onOpenAuth }: NavbarProps) {
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate({ name: "chat" })}>
                       <MessageCircle className="h-4 w-4" /> Conversations
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate({ name: "guardian" })}>
-                      <ShieldCheck className="h-4 w-4" /> Guardian Dashboard
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => navigate({ name: "admin" })}>
@@ -298,7 +296,6 @@ export function Navbar({ view, navigate, onOpenAuth }: NavbarProps) {
 
                   {[
                     { label: "Our Islamic Approach", view: { name: "approach" } as View, icon: HandHeart },
-                    { label: "Guardian Dashboard", view: { name: "guardian" } as View, icon: ShieldCheck },
                     { label: "Admin Panel", view: { name: "admin" } as View, icon: LayoutDashboard },
                   ].map(({ label, view: v, icon: Icon }) => (
                     <button
