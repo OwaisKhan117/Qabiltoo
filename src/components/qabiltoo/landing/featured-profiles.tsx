@@ -123,7 +123,7 @@ export function FeaturedProfiles({
   });
 
   return (
-    <section className="py-20 lg:py-28" aria-label="Featured profiles">
+    <section id="featured-profiles" className="py-20 lg:py-28" aria-label="Featured profiles">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           arabic="مختارون"

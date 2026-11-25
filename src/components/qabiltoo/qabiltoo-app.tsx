@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ShieldAlert } from "lucide-react";
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Navbar } from "./navbar";
 import { Footer } from "./footer";
@@ -209,7 +211,32 @@ function QabiltooShell() {
 
         {view.name === "info" && <InfoView page={view.page} navigate={navigate} />}
 
-        {view.name === "admin" && <AdminView navigate={navigate} />}
+        {view.name === "admin" &&
+          (user?.role === "admin" ? (
+            <AdminView navigate={navigate} />
+          ) : (
+            <section
+              aria-label="Access restricted"
+              className="flex min-h-[70vh] flex-col items-center justify-center gap-4 px-4 text-center"
+            >
+              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-destructive/10">
+                <ShieldAlert className="h-8 w-8 text-destructive" aria-hidden />
+              </span>
+              <h1 className="font-display text-2xl font-bold">403 — Admin access only</h1>
+              <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+                This operations console is restricted to Qabiltoo administrators.
+                If you believe you should have access, please contact the platform team.
+              </p>
+              {!user && (
+                <Button className="rounded-full" onClick={() => setAuthOpen(true)}>
+                  Sign In
+                </Button>
+              )}
+              <Button variant="outline" className="rounded-full" onClick={() => navigate({ name: "landing" })}>
+                Back to Home
+              </Button>
+            </section>
+          ))}
       </div>
 
       <Footer navigate={navigate} />
@@ -221,8 +248,9 @@ function QabiltooShell() {
         onLoggedIn={(profile) => {
           navigate({ name: "profile", id: profile.id });
           toast({
-            title: `Assalamu Alaikum, ${profile.fullName.split(" ")[0]}`,
+            title: `Assalamualaikum, ${profile.fullName.split(" ")[0]}`,
             description: "You are signed in — this is your profile.",
+            duration: 1000,
           });
         }}
       />

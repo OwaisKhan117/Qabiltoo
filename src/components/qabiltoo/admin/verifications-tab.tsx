@@ -13,6 +13,7 @@ import {
   EmptyState,
   LiveChip,
   TierBadge,
+  adminFetch,
   timeAgoLong,
   type AdminVerification,
 } from "./kit";
@@ -21,7 +22,7 @@ type VerifyAction = "approve" | "reject";
 
 async function fetchVerifications(status?: string): Promise<{ requests: AdminVerification[] }> {
   const url = status ? `/api/admin/verifications?status=${status}` : "/api/admin/verifications";
-  const res = await fetch(url);
+  const res = await adminFetch(url);
   if (!res.ok) throw new Error("Failed to fetch verifications");
   return res.json();
 }
@@ -53,7 +54,7 @@ export function VerificationsTab() {
     // Optimistic: drop the row immediately while the PATCH settles
     setHandled((prev) => new Set(prev).add(req.id));
     try {
-      const res = await fetch(`/api/admin/verifications/${req.id}`, {
+      const res = await adminFetch(`/api/admin/verifications/${req.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),

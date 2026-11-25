@@ -3,9 +3,9 @@
 import { ActivityTicker } from "./activity-ticker";
 import { Hero } from "./hero";
 import { StatsStrip } from "./stats-strip";
-import { HowItWorks } from "./how-it-works";
 import { FeaturedProfiles } from "./featured-profiles";
 import { VerseBanner } from "./verse-banner";
+import { MemberSpotlight } from "./member-spotlight";
 import { SuccessStories } from "./success-stories";
 import { TrustBadges } from "./features";
 import { ApproachPreview } from "./approach-preview";
@@ -31,7 +31,7 @@ export function LandingView({
       <Hero navigate={navigate} />
       <ActivityTicker />
       <StatsStrip />
-      <HowItWorks />
+      <MemberSpotlight />
       <FeaturedProfiles
         navigate={navigate}
         onViewProfile={onViewProfile}

@@ -1,10 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireAdminId } from "@/lib/qabiltoo/admin-guard";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const adminId = await requireAdminId(req);
+    if (!adminId) {
+      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    }
+
     const [
       totalProfiles,
       femaleCount,

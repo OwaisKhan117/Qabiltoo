@@ -16,7 +16,12 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
+      // Positioned ~90px above the bottom edge so it never overlaps the
+      // footer, chat/WhatsApp button or cookie banner. Centered on mobile,
+      // anchored 24px from the left on tablet/desktop.
+      "fixed z-[100] flex max-h-screen w-[calc(100%-2rem)] max-w-[420px] flex-col-reverse gap-2 outline-none",
+      "bottom-[90px] left-1/2 -translate-x-1/2",
+      "sm:left-6 sm:w-[420px] sm:translate-x-0",
       className
     )}
     {...props}

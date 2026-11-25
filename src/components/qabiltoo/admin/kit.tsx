@@ -7,6 +7,7 @@ import Image from "next/image";
 import type { AdminStats, VerificationTier } from "@/lib/qabiltoo/types";
 import { VERIFICATION_TIER_META } from "@/lib/qabiltoo/types";
 import { cn } from "@/lib/utils";
+import { useAuthStore } from "@/lib/qabiltoo/store";
 
 /** Relative time with a spoken suffix: "3m ago", "2h ago", "Mar 3". */
 export function timeAgoLong(iso: string): string {
@@ -58,11 +59,22 @@ export interface AdminReport {
 
 export const ADMIN_STATS_KEY = ["admin", "stats"] as const;
 
+/**
+ * Fetch wrapper for admin endpoints — attaches the signed-in admin's
+ * profile id so the backend can verify the admin role (403 otherwise).
+ */
+export function adminFetch(path: string, init?: RequestInit): Promise<Response> {
+  const adminId = useAuthStore.getState().user?.id;
+  const headers = new Headers(init?.headers);
+  if (adminId) headers.set("x-admin-id", adminId);
+  return fetch(path, { ...init, headers });
+}
+
 export function useAdminStats() {
   return useQuery({
     queryKey: ADMIN_STATS_KEY,
     queryFn: async (): Promise<AdminStats> => {
-      const res = await fetch("/api/admin/stats");
+      const res = await adminFetch("/api/admin/stats");
       if (!res.ok) throw new Error("Failed to fetch admin stats");
       return res.json();
     },

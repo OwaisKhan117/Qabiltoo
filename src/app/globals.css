@@ -244,6 +244,11 @@
     animation: spin-360 26s linear infinite;
   }
 
+  /* Interlocking-rings backdrop — gentle, dignified drift */
+  .rings-drift {
+    animation: rings-drift 22s ease-in-out infinite alternate;
+  }
+
   /* Frosted glass card */
   .glass-card {
     background: color-mix(in srgb, var(--card) 72%, transparent);
@@ -329,12 +334,22 @@
   }
 }
 
+@keyframes rings-drift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  100% {
+    transform: translate3d(-2.5%, 2%, 0) rotate(-6deg) scale(1.06);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .text-gradient-gold,
   .badge-pulse,
   .float-slow,
   .float-slower,
-  .spin-slower {
+  .spin-slower,
+  .rings-drift {
     animation: none;
   }
 }

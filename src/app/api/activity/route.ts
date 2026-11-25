@@ -47,6 +47,7 @@ export async function GET(_req: NextRequest) {
         },
       }),
       db.profile.findMany({
+        where: { role: { not: "admin" } },
         orderBy: { createdAt: "desc" },
         take: 4,
         select: { fullName: true, city: true, state: true, country: true, createdAt: true },

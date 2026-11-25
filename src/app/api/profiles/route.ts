@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
       viewerGender === "male" ? "female" : viewerGender === "female" ? "male" : null;
 
     const where: Record<string, unknown> = {};
+    where.role = { not: "admin" }; // operations accounts never appear in member discovery
     if (oppositeGender) {
       where.gender = oppositeGender;
     } else if (gender === "male" || gender === "female") {

@@ -235,10 +235,14 @@ export function Navbar({ view, navigate, onOpenAuth }: NavbarProps) {
                     <DropdownMenuItem onClick={() => navigate({ name: "chat" })}>
                       <MessageCircle className="h-4 w-4" /> Conversations
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate({ name: "admin" })}>
-                      <LayoutDashboard className="h-4 w-4" /> Admin Panel
-                    </DropdownMenuItem>
+                    {user.role === "admin" && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => navigate({ name: "admin" })}>
+                          <LayoutDashboard className="h-4 w-4" /> Admin Panel
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                       <LogOut className="h-4 w-4" /> Sign out
@@ -296,7 +300,9 @@ export function Navbar({ view, navigate, onOpenAuth }: NavbarProps) {
 
                   {[
                     { label: "Our Islamic Approach", view: { name: "approach" } as View, icon: HandHeart },
-                    { label: "Admin Panel", view: { name: "admin" } as View, icon: LayoutDashboard },
+                    ...(user?.role === "admin"
+                      ? [{ label: "Admin Panel", view: { name: "admin" } as View, icon: LayoutDashboard }]
+                      : []),
                   ].map(({ label, view: v, icon: Icon }) => (
                     <button
                       key={label}

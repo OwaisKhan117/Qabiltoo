@@ -8,15 +8,12 @@ import { ArrowRight, BadgeCheck, Lock, Sparkles, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ParallaxCard } from "../shared/parallax-card";
+import { RingsBackdrop } from "../shared/rings-backdrop";
 import { VerificationBadge } from "../shared/verification-badge";
 import { displayName, type Profile, type ProfilesResponse, type View } from "@/lib/qabiltoo/types";
 import { cn } from "@/lib/utils";
 
 /* Heavy canvas layers are lazy-loaded client-side only */
-const GirihCanvas = dynamic(
-  () => import("../shared/girih-canvas").then((m) => ({ default: m.GirihCanvas })),
-  { ssr: false }
-);
 const LightMotes = dynamic(
   () => import("../shared/light-motes").then((m) => ({ default: m.LightMotes })),
   { ssr: false }
@@ -114,8 +111,8 @@ export function Hero({ navigate }: HeroProps) {
   const cards = (data?.profiles ?? []).slice(0, 3);
   const [cardA, cardB, cardC] = cards;
 
-  function scrollToHowItWorks() {
-    document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  function scrollToFeatured() {
+    document.getElementById("featured-profiles")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   return (
@@ -124,9 +121,7 @@ export function Hero({ navigate }: HeroProps) {
       aria-label="Welcome to Qabiltoo"
     >
       {/* ── Atmosphere layers ── */}
-      <div className="absolute inset-0 opacity-50">
-        <GirihCanvas color="#d4af37" density={6} speed={0.8} opacity={0.6} />
-      </div>
+      <RingsBackdrop className="opacity-80" />
       <div className="absolute inset-0">
         <LightMotes count={42} speed={0.8} />
       </div>
@@ -206,11 +201,11 @@ export function Hero({ navigate }: HeroProps) {
             <Button
               size="lg"
               variant="outline"
-              onClick={scrollToHowItWorks}
+              onClick={scrollToFeatured}
               className="rounded-full border-white/35 bg-white/5 text-base text-white hover:border-gold-300/60 hover:bg-white/10 hover:text-white"
             >
               <Sparkles className="h-4 w-4 text-gold-300" />
-              How It Works
+              Meet Our Members
             </Button>
           </motion.div>
 

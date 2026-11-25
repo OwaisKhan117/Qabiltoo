@@ -31,6 +31,7 @@ export interface Profile {
   phone: string | null;
   isDemo: boolean;
   onBehalfOf: OnBehalfOf;
+  role: string;
   verificationTier: VerificationTier;
   trustScore: number;
   tier: SubscriptionTier;

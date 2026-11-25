@@ -1,16 +1,11 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PatternOverlay } from "../pattern";
+import { RingsBackdrop } from "../shared/rings-backdrop";
 import { Reveal } from "../shared/reveal";
 import type { View } from "@/lib/qabiltoo/types";
-
-const GirihCanvas = dynamic(
-  () => import("../shared/girih-canvas").then((m) => ({ default: m.GirihCanvas })),
-  { ssr: false }
-);
 
 export function CtaSection({ navigate }: { navigate: (view: View) => void }) {
   return (
@@ -18,10 +13,8 @@ export function CtaSection({ navigate }: { navigate: (view: View) => void }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal direction="scale" duration={1}>
           <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-950 px-6 py-16 text-center text-white shadow-2xl shadow-emerald-950/30 sm:px-12 lg:py-20">
-            {/* faint girih lattice + pattern */}
-            <div className="absolute inset-0 opacity-30">
-              <GirihCanvas color="#d4af37" density={5} speed={0.6} opacity={0.7} />
-            </div>
+            {/* interlocking rings + pattern */}
+            <RingsBackdrop className="opacity-60" />
             <PatternOverlay className="text-white/5" />
             <div className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full bg-gold-500/10 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-gold-500/10 blur-3xl" />

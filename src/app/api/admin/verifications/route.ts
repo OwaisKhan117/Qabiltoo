@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireAdminId } from "@/lib/qabiltoo/admin-guard";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   try {
+    const adminId = await requireAdminId(req);
+    if (!adminId) {
+      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    }
+
     const status = req.nextUrl.searchParams.get("status");
     const requests = await db.verificationRequest.findMany({
       where: status ? { status } : undefined,

@@ -34,7 +34,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { SuccessStory } from "@/lib/qabiltoo/types";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-import { EmptyState, StoryThumb } from "./kit";
+import { EmptyState, StoryThumb, adminFetch } from "./kit";
 
 /* ── Image picker source (existing story photos) ──────────────── */
 
@@ -79,7 +79,7 @@ export function ContentTab() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "stories"],
     queryFn: async (): Promise<{ stories: SuccessStory[] }> => {
-      const res = await fetch("/api/admin/stories");
+      const res = await adminFetch("/api/admin/stories");
       if (!res.ok) throw new Error("Failed to fetch stories");
       return res.json();
     },
@@ -98,7 +98,7 @@ export function ContentTab() {
     setBusyId(story.id);
     setOverrides((prev) => ({ ...prev, [story.id]: { ...prev[story.id], ...changes } }));
     try {
-      const res = await fetch(`/api/admin/stories/${story.id}`, {
+      const res = await adminFetch(`/api/admin/stories/${story.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(changes),
@@ -125,7 +125,7 @@ export function ContentTab() {
   const deleteStory = async (story: SuccessStory) => {
     setBusyId(story.id);
     try {
-      const res = await fetch(`/api/admin/stories/${story.id}`, { method: "DELETE" });
+      const res = await adminFetch(`/api/admin/stories/${story.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Request failed");
       toast({
         title: "Story removed",

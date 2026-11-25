@@ -1,41 +1,102 @@
 "use client";
 
+import { useId } from "react";
 import { cn } from "@/lib/utils";
 
+/* ── Qabiltoo brand mark: two interlocking rings ────────────────
+   Pink ring for the bride, blue ring for the groom — the heart of
+   the identity. Drawn as crisp vector strokes with soft gradients. */
+
+const BRIDE_FROM = "#f9a8d4";
+const BRIDE_TO = "#ec4899";
+const GROOM_FROM = "#9ec5fe";
+const GROOM_TO = "#5b8def";
+
+/**
+ * Icon-only mark — the two interlocking rings.
+ * Transparent background; reads cleanly on light and dark surfaces.
+ */
 export function LogoMark({ className }: { className?: string }) {
+  const id = useId().replace(/[:]/g, "");
   return (
     <svg viewBox="0 0 48 48" fill="none" className={cn("h-9 w-9", className)} aria-hidden="true">
       <defs>
-        <linearGradient id="qab-gold" x1="8" y1="4" x2="40" y2="44" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#e5b84b" />
-          <stop offset="1" stopColor="#c98f1f" />
+        <linearGradient id={`qab-bride-${id}`} x1="6" y1="8" x2="30" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor={BRIDE_FROM} />
+          <stop offset="1" stopColor={BRIDE_TO} />
+        </linearGradient>
+        <linearGradient id={`qab-groom-${id}`} x1="20" y1="10" x2="44" y2="40" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor={GROOM_FROM} />
+          <stop offset="1" stopColor={GROOM_TO} />
         </linearGradient>
       </defs>
-      {/* Crescent embracing */}
-      <path
-        d="M31.5 3.5c8.6 2.6 14.5 10.6 14.5 19.7 0 11.3-9.2 20.5-20.5 20.5-9.1 0-17.1-6-19.7-14.5C9.4 38 18.6 44.4 27.7 42.5 37.2 40.6 43.5 31.5 42 22c-1.2-7.6-6.4-13.7-13.4-16.2-1-.4 1.9-2.6 2.9-2.3Z"
-        fill="url(#qab-gold)"
-      />
-      {/* Heart nested in crescent */}
-      <path
-        d="M15.2 21.6c-2.7-2.6-2.7-6.9 0-9.5 2.4-2.3 6.2-2.3 8.6 0l.7.7.7-.7c2.4-2.3 6.2-2.3 8.6 0 2.7 2.6 2.7 6.9 0 9.5l-9.3 9-9.3-9Z"
-        fill="#0d6b4f"
-      />
+      {/* bride ring (pink) */}
+      <circle cx="18.5" cy="24" r="12.5" stroke={`url(#qab-bride-${id})`} strokeWidth="4.5" />
+      {/* groom ring (blue) — interlocking with the bride ring */}
+      <circle cx="29.5" cy="24" r="12.5" stroke={`url(#qab-groom-${id})`} strokeWidth="4.5" />
     </svg>
   );
 }
 
+/**
+ * One "o" of the wordmark rendered as a wedding ring.
+ * Sized against the surrounding font so it sits on the text baseline
+ * exactly like a lowercase "o" — the name and the symbol become one.
+ */
+function RingO({
+  variant,
+  gradientId,
+  className,
+}: {
+  variant: "bride" | "groom";
+  gradientId: string;
+  className?: string;
+}) {
+  const from = variant === "bride" ? BRIDE_FROM : GROOM_FROM;
+  const to = variant === "bride" ? BRIDE_TO : GROOM_TO;
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      fill="none"
+      aria-hidden="true"
+      className={cn("inline-block h-[0.66em] w-[0.66em] shrink-0", className)}
+    >
+      <defs>
+        <linearGradient id={gradientId} x1="10" y1="8" x2="54" y2="56" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor={from} />
+          <stop offset="1" stopColor={to} />
+        </linearGradient>
+      </defs>
+      <circle cx="32" cy="32" r="25" stroke={`url(#${gradientId})`} strokeWidth="9.5" />
+    </svg>
+  );
+}
+
+/**
+ * Full wordmark — "Qabilt" in the display serif, with the final two
+ * "o" letters replaced by the pink (bride) and blue (groom) rings
+ * touching/overlapping each other.
+ *
+ * `dark` switches the word colour for dark backgrounds; the rings
+ * keep their pink/blue identity on both.
+ */
 export function Logo({ className, dark = false }: { className?: string; dark?: boolean }) {
+  const id = useId().replace(/[:]/g, "");
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
-      <LogoMark className="h-8 w-8" />
       <span
         className={cn(
-          "font-display text-2xl font-bold tracking-tight",
+          "font-display inline-flex items-baseline text-2xl font-bold leading-none tracking-tight",
           dark ? "text-white" : "text-primary"
         )}
       >
-        Qabiltoo
+        <span>Qabilt</span>
+        <RingO variant="bride" gradientId={`qab-word-bride-${id}`} className="ml-[0.05em] translate-y-[0.02em]" />
+        <RingO
+          variant="groom"
+          gradientId={`qab-word-groom-${id}`}
+          className="-ml-[0.14em] translate-y-[0.02em]"
+        />
       </span>
     </span>
   );

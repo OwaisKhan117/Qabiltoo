@@ -9,6 +9,7 @@ import { useAuthStore } from "@/lib/qabiltoo/store";
 import type { Profile, View } from "@/lib/qabiltoo/types";
 import { cn } from "@/lib/utils";
 import { PatternOverlay } from "../pattern";
+import { LogoMark } from "../logo";
 import { PreviewCard } from "./preview-card";
 import { StarProgress } from "./progress";
 import { DEFAULT_DATA, buildPayload, validateStep, type OnboardingData } from "./onboarding";
@@ -146,6 +147,9 @@ export function RegisterView({ navigate }: RegisterViewProps) {
       <section className="relative overflow-hidden border-b border-gold-500/15 bg-gradient-to-b from-gold-500/10 via-background to-background">
         <PatternOverlay className="text-gold-600/10" />
         <div className="relative mx-auto max-w-3xl px-4 pb-8 pt-10 text-center sm:px-6">
+          <div className="mb-4 flex justify-center">
+            <LogoMark className="h-12 w-12" />
+          </div>
           <p className="font-arabic text-xl leading-relaxed text-gold-600 dark:text-gold-300" aria-hidden>
             بسم الله
           </p>

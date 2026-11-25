@@ -130,11 +130,35 @@ export function Footer({ navigate }: FooterProps) {
               Stay in Touch
             </h3>
             <ul className="space-y-3 text-sm text-primary-foreground/80">
-              <li className="flex items-center gap-2">
-                <Mail className="h-4 w-4 shrink-0 text-gold-300" /> care@qabiltoo.in
+              <li className="flex items-start gap-2">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-gold-300" />
+                <a
+                  href="mailto:care@qabiltoo.in"
+                  className="break-all transition-colors hover:text-gold-300 hover:underline"
+                >
+                  care@qabiltoo.in
+                </a>
               </li>
-              <li className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 shrink-0 text-gold-300" /> Okhla, New Delhi, India, 110025
+              <li className="flex items-start gap-2">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-gold-300" />
+                <a
+                  href="mailto:jkprincekhan@gmail.com"
+                  className="break-all transition-colors hover:text-gold-300 hover:underline"
+                >
+                  jkprincekhan@gmail.com
+                </a>
+              </li>
+              <li className="flex items-start gap-2">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-gold-300" />
+                <a
+                  href="mailto:mowaiskhan6398@gmail.com"
+                  className="break-all transition-colors hover:text-gold-300 hover:underline"
+                >
+                  mowaiskhan6398@gmail.com
+                </a>
+              </li>
+              <li className="flex items-start gap-2">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-gold-300" /> Okhla, New Delhi, India, 110025
               </li>
               <li className="flex items-start gap-2">
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-gold-300" />
