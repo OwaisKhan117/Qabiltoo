@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
-  <!-- Qabiltoo brand mark: two interlocking rings — pink for the bride, blue for the groom -->
+  <!-- Qabiltoo brand mark: two interlocking diamond rings — pink for the bride, blue for the groom -->
   <defs>
     <linearGradient id="qab-bride" x1="6" y1="8" x2="30" y2="40" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#f9a8d4"/>
@@ -9,7 +9,21 @@
       <stop offset="0" stop-color="#9ec5fe"/>
       <stop offset="1" stop-color="#5b8def"/>
     </linearGradient>
+    <linearGradient id="qab-gem" x1="0.1" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.5" stop-color="#f2f7fd"/>
+      <stop offset="1" stop-color="#dfe9f6"/>
+    </linearGradient>
   </defs>
   <circle cx="18.5" cy="24" r="12.5" stroke="url(#qab-bride)" stroke-width="4.5"/>
   <circle cx="29.5" cy="24" r="12.5" stroke="url(#qab-groom)" stroke-width="4.5"/>
+  <!-- solitaire diamonds seated on top of each ring -->
+  <g transform="translate(15.9 6.3) rotate(-8)">
+    <path d="M -3 -4 L 3 -4 L 5.5 -1.5 L 0 4 L -5.5 -1.5 Z" fill="url(#qab-gem)" stroke="#b7c4d8" stroke-width="0.85" stroke-linejoin="round"/>
+    <path d="M -5.5 -1.5 L 5.5 -1.5 M -3 -4 L 0 4 L 3 -4" fill="none" stroke="#9fb0c7" stroke-width="0.5" stroke-linejoin="round" opacity="0.55"/>
+  </g>
+  <g transform="translate(32.1 6.3) rotate(8)">
+    <path d="M -3 -4 L 3 -4 L 5.5 -1.5 L 0 4 L -5.5 -1.5 Z" fill="url(#qab-gem)" stroke="#b7c4d8" stroke-width="0.85" stroke-linejoin="round"/>
+    <path d="M -5.5 -1.5 L 5.5 -1.5 M -3 -4 L 0 4 L 3 -4" fill="none" stroke="#9fb0c7" stroke-width="0.5" stroke-linejoin="round" opacity="0.55"/>
+  </g>
 </svg>

@@ -249,6 +249,13 @@
     animation: rings-drift 22s ease-in-out infinite alternate;
   }
 
+  /* Diamond sparkle on the interlocking rings backdrop */
+  .rings-twinkle {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: rings-twinkle 4s ease-in-out infinite alternate;
+  }
+
   /* Frosted glass card */
   .glass-card {
     background: color-mix(in srgb, var(--card) 72%, transparent);
@@ -343,13 +350,25 @@
   }
 }
 
+@keyframes rings-twinkle {
+  0% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 0.95;
+    transform: scale(1.1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .text-gradient-gold,
   .badge-pulse,
   .float-slow,
   .float-slower,
   .spin-slower,
-  .rings-drift {
+  .rings-drift,
+  .rings-twinkle {
     animation: none;
   }
 }
