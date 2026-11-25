@@ -13,6 +13,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, skipped: true });
     }
 
+    // Validate both profiles exist — bogus ids get a clean 400, not a 500 FK error
+    const [viewer, target] = await Promise.all([
+      db.profile.findUnique({ where: { id: viewerId }, select: { id: true } }),
+      db.profile.findUnique({ where: { id: profileId }, select: { id: true } }),
+    ]);
+    if (!viewer || !target) {
+      return NextResponse.json({ error: "Unknown viewerId or profileId" }, { status: 400 });
+    }
+
     const since = new Date(Date.now() - 24 * 3600 * 1000);
     const recent = await db.profileView.findFirst({
       where: { viewerId, profileId, createdAt: { gt: since } },

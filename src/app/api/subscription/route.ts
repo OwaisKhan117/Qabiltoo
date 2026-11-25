@@ -39,22 +39,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Profile not found" }, { status: 404 });
     }
 
-    const updated = await db.profile.update({
-      where: { id: profile.id },
-      data: { tier: plan.tier },
-    });
-
-    await db.notification.create({
-      data: {
-        profileId: profile.id,
-        type: "system",
-        title: `${plan.name} activated`,
-        body:
-          plan.durationMonths === null
-            ? "Your Unlimited membership is active until you find your match — chat is now unlocked. Barakallahu feek."
-            : `Your ${plan.duration} membership is active — chat is now unlocked. Barakallahu feek.`,
-      },
-    });
+    // Plan activation + member notification are independent writes → parallel
+    const [updated] = await Promise.all([
+      db.profile.update({
+        where: { id: profile.id },
+        data: { tier: plan.tier },
+      }),
+      db.notification.create({
+        data: {
+          profileId: profile.id,
+          type: "system",
+          title: `${plan.name} activated`,
+          body:
+            plan.durationMonths === null
+              ? "Your Unlimited membership is active until you find your match — chat is now unlocked. Barakallahu feek."
+              : `Your ${plan.duration} membership is active — chat is now unlocked. Barakallahu feek.`,
+        },
+      }),
+    ]);
 
     return NextResponse.json({ profile: serializeProfile(updated) });
   } catch (error) {

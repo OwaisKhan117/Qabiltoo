@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  Loader2,
   Moon,
   Sun,
   Menu,
@@ -19,7 +20,9 @@ import {
   HandHeart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useMounted } from "@/hooks/use-mounted";
+import { toast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,7 +67,10 @@ export function Navbar({ view, navigate, onOpenAuth }: NavbarProps) {
   }
 
   /* ── Notifications (poll + realtime invalidation) ─────────── */
-  const { data: notifData } = useQuery({
+  const {
+    data: notifData,
+    isLoading: notifsLoading,
+  } = useQuery({
     queryKey: ["notifications", user?.id],
     queryFn: async () => {
       const res = await fetch(`/api/notifications?profileId=${user!.id}`);
@@ -77,15 +83,29 @@ export function Navbar({ view, navigate, onOpenAuth }: NavbarProps) {
   const notifications = notifData?.notifications ?? [];
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  function markAllRead() {
-    if (!user) return;
-    fetch("/api/notifications", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ profileId: user.id }),
-    }).then(() => {
+  /* Mark all read — guarded against double taps, with friendly failure toast */
+  const [markingRead, setMarkingRead] = useState(false);
+
+  async function markAllRead() {
+    if (!user || markingRead) return;
+    setMarkingRead(true);
+    try {
+      const res = await fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId: user.id }),
+      });
+      if (!res.ok) throw new Error("Failed to mark notifications read");
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    });
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Couldn't mark notifications read",
+        description: "Please try again in a moment.",
+      });
+    } finally {
+      setMarkingRead(false);
+    }
   }
 
   return (
@@ -158,16 +178,26 @@ export function Navbar({ view, navigate, onOpenAuth }: NavbarProps) {
                       <p className="text-sm font-semibold">Notifications</p>
                       {unreadCount > 0 && (
                         <button
-                          className="text-xs font-medium text-gold-600 hover:underline"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-gold-600 hover:underline disabled:opacity-60"
                           onClick={markAllRead}
+                          disabled={markingRead}
                         >
-                          Mark all read
+                          {markingRead && (
+                            <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
+                          )}
+                          {markingRead ? "Marking…" : "Mark all read"}
                         </button>
                       )}
                     </div>
                     <DropdownMenuSeparator />
                     <div className="max-h-80 overflow-y-auto scrollbar-thin">
-                      {notifications.length === 0 ? (
+                      {notifsLoading ? (
+                        <div className="flex flex-col gap-2 px-3 py-3">
+                          {Array.from({ length: 3 }).map((_, i) => (
+                            <Skeleton key={i} className="h-12 w-full rounded-lg" />
+                          ))}
+                        </div>
+                      ) : notifications.length === 0 ? (
                         <p className="px-3 py-6 text-center text-sm text-muted-foreground">
                           No notifications yet — insha&apos;Allah soon.
                         </p>

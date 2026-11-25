@@ -155,7 +155,7 @@ export function ContentTab() {
     if (!formValid) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/admin/stories", {
+      const res = await adminFetch("/api/admin/stories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

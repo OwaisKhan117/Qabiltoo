@@ -71,12 +71,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (!profile) {
+      // 401 (not 404) for unknown email — same message, but prevents user enumeration
       return NextResponse.json(
         {
           error:
             "No profile found with this email. For the demo, just type \"ayesha\" or tap the demo button below.",
         },
-        { status: 404 }
+        { status: 401 }
       );
     }
 

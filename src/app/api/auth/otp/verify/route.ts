@@ -36,9 +36,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await db.otpCode.update({ where: { id: otp.id }, data: { consumed: true } });
+    // Consume the OTP and fetch the profile — independent → run in parallel
+    const [, profile] = await Promise.all([
+      db.otpCode.update({ where: { id: otp.id }, data: { consumed: true } }),
+      db.profile.findUnique({ where: { phone } }),
+    ]);
 
-    const profile = await db.profile.findUnique({ where: { phone } });
     if (profile) {
       return NextResponse.json({ ok: true, profile: serializeProfile(profile), isNew: false });
     }

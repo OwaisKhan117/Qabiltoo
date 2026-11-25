@@ -25,6 +25,12 @@ export async function PATCH(
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });
     }
+
+    const existing = await db.successStory.findUnique({ where: { id }, select: { id: true } });
+    if (!existing) {
+      return NextResponse.json({ error: "Story not found" }, { status: 404 });
+    }
+
     const story = await db.successStory.update({ where: { id }, data: parsed.data });
     return NextResponse.json({ story });
   } catch (error) {
@@ -44,6 +50,11 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const existing = await db.successStory.findUnique({ where: { id }, select: { id: true } });
+    if (!existing) {
+      return NextResponse.json({ error: "Story not found" }, { status: 404 });
+    }
+
     await db.successStory.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (error) {

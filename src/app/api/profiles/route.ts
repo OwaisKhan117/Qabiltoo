@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { serializeProfile } from "@/lib/qabiltoo/serialize";
@@ -156,28 +157,28 @@ export async function POST(req: NextRequest) {
     }
     const d = parsed.data;
 
-    if (d.email) {
-      const existing = await db.profile.findUnique({ where: { email: d.email } });
-      if (existing) {
-        return NextResponse.json(
-          { error: "An account with this email already exists. Please sign in instead." },
-          { status: 409 }
-        );
-      }
-    }
-    if (d.phone) {
-      const existingPhone = await db.profile.findUnique({ where: { phone: d.phone } });
-      if (existingPhone) {
-        return NextResponse.json(
-          { error: "An account with this phone already exists. Please sign in instead." },
-          { status: 409 }
-        );
-      }
-    }
     if (!d.email && !d.phone) {
       return NextResponse.json(
         { error: "Either an email or phone number is required." },
         { status: 400 }
+      );
+    }
+
+    // Duplicate checks run in parallel — they are independent lookups
+    const [existingByEmail, existingByPhone] = await Promise.all([
+      d.email ? db.profile.findUnique({ where: { email: d.email } }) : Promise.resolve(null),
+      d.phone ? db.profile.findUnique({ where: { phone: d.phone } }) : Promise.resolve(null),
+    ]);
+    if (existingByEmail) {
+      return NextResponse.json(
+        { error: "An account with this email already exists. Please sign in instead." },
+        { status: 409 }
+      );
+    }
+    if (existingByPhone) {
+      return NextResponse.json(
+        { error: "An account with this phone already exists. Please sign in instead." },
+        { status: 409 }
       );
     }
 
@@ -209,6 +210,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ profile: serializeProfile(profile) }, { status: 201 });
   } catch (error) {
     console.error("POST /api/profiles error:", error);
+    // Unique-constraint race (two concurrent signups) → clean 409, not 500
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return NextResponse.json(
+        { error: "An account with this email or phone already exists. Please sign in instead." },
+        { status: 409 }
+      );
+    }
     return NextResponse.json({ error: "Failed to create profile" }, { status: 500 });
   }
 }

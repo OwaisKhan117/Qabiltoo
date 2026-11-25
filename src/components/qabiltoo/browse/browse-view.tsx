@@ -198,8 +198,10 @@ export function BrowseView({
 
   const { data, isLoading, isFetching, isError, refetch } = useQuery({
     queryKey: ["profiles", queryString],
-    queryFn: async (): Promise<ProfilesResponse> => {
-      const res = await fetch(`/api/profiles?${queryString}`);
+    // `signal` cancels outdated requests when the query key changes mid-flight
+    // (search-as-you-type) or the component unmounts — TanStack Query handles it.
+    queryFn: async ({ signal }): Promise<ProfilesResponse> => {
+      const res = await fetch(`/api/profiles?${queryString}`, { signal });
       if (!res.ok) throw new Error("Failed to fetch profiles");
       return res.json();
     },
@@ -821,7 +823,7 @@ export function BrowseView({
                 variant="outline"
                 size="icon"
                 className="rounded-full"
-                disabled={page <= 1}
+                disabled={page <= 1 || isFetching}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 aria-label="Previous page"
               >
@@ -839,6 +841,7 @@ export function BrowseView({
                     size="icon"
                     className={cn("rounded-full text-sm", p === page && "btn-gold-shimmer border-gold-500 bg-gold-500 text-white hover:bg-gold-600")}
                     onClick={() => setPage(p)}
+                    disabled={isFetching}
                     aria-label={`Page ${p}`}
                     aria-current={p === page ? "page" : undefined}
                   >
@@ -850,7 +853,7 @@ export function BrowseView({
                 variant="outline"
                 size="icon"
                 className="rounded-full"
-                disabled={page >= data.totalPages}
+                disabled={page >= data.totalPages || isFetching}
                 onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
                 aria-label="Next page"
               >

@@ -24,17 +24,20 @@ export async function POST(req: NextRequest) {
     }
     const phone = parsed.data.phone.replace(/[\s-]/g, "");
 
-    const existing = await db.profile.findUnique({ where: { phone } });
-
     // Demo mode: fixed, predictable code. Production would send via SMS gateway.
     const code = "1234";
-    await db.otpCode.create({
-      data: {
-        phone,
-        code,
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-      },
-    });
+
+    // Profile lookup + OTP row creation are independent → run in parallel
+    const [existing] = await Promise.all([
+      db.profile.findUnique({ where: { phone } }),
+      db.otpCode.create({
+        data: {
+          phone,
+          code,
+          expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+        },
+      }),
+    ]);
 
     return NextResponse.json({
       sent: true,

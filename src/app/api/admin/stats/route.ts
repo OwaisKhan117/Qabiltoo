@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Admin access required" }, { status: 403 });
     }
 
+    // All stats reads are independent → a single parallel batch
     const [
       totalProfiles,
       femaleCount,
@@ -20,6 +21,7 @@ export async function GET(req: NextRequest) {
       totalProposals,
       messagesCount,
       goldMembers,
+      allProfiles,
     ] = await Promise.all([
       db.profile.count(),
       db.profile.count({ where: { gender: "female" } }),
@@ -29,11 +31,10 @@ export async function GET(req: NextRequest) {
       db.interest.count(),
       db.message.count(),
       db.profile.count({ where: { tier: { in: ["Gold", "Assisted", "Unlimited"] } } }),
+      db.profile.findMany({
+        select: { createdAt: true, country: true, idVerified: true },
+      }),
     ]);
-
-    const allProfiles = await db.profile.findMany({
-      select: { createdAt: true, country: true, idVerified: true },
-    });
 
     // Signups per day, last 7 days
     const days: { date: string; count: number }[] = [];

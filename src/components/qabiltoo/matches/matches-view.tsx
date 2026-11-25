@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
+  AlertCircle,
   BookmarkX,
   Eye,
   Gem,
@@ -12,6 +13,7 @@ import {
   Lock,
   MailOpen,
   MessageCircle,
+  RefreshCw,
   Sparkles,
   UserRoundX,
 } from "lucide-react";
@@ -119,7 +121,11 @@ export function MatchesView({
     staleTime: 10_000,
   });
 
-  const { data: viewsData } = useQuery({
+  const {
+    data: viewsData,
+    isError: viewsError,
+    refetch: refetchViews,
+  } = useQuery({
     queryKey: ["views", user?.id],
     queryFn: async () => {
       const res = await fetch(`/api/views?profileId=${user!.id}&tier=${encodeURIComponent(user!.tier)}`);
@@ -554,7 +560,18 @@ export function MatchesView({
 
         {/* ═══ WHO VIEWED ME ═══ */}
         <TabsContent value="views">
-          {!viewsData ? (
+          {viewsError ? (
+            <div className="flex flex-col items-center gap-3 rounded-3xl border border-destructive/30 bg-destructive/5 px-6 py-10 text-center">
+              <AlertCircle className="h-6 w-6 text-destructive" aria-hidden />
+              <p className="text-sm font-medium text-foreground">
+                Couldn&apos;t load your profile visitors. Please try again.
+              </p>
+              <Button variant="outline" size="sm" onClick={() => refetchViews()}>
+                <RefreshCw className="h-4 w-4" aria-hidden />
+                Retry
+              </Button>
+            </div>
+          ) : !viewsData ? (
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {[0, 1, 2].map((i) => (
                 <Skeleton key={i} className="h-44 rounded-3xl" />

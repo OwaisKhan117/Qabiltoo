@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { CalendarHeart, HeartHandshake, MapPin, Sparkles } from "lucide-react";
+import { CalendarHeart, HeartHandshake, MapPin, RefreshCw, Sparkles } from "lucide-react";
 import type { SuccessStory } from "@/lib/qabiltoo/types";
 import type { View } from "@/lib/qabiltoo/types";
 import { useQuery } from "@tanstack/react-query";
@@ -88,7 +88,7 @@ function StorySkeleton() {
 /* ── View ─────────────────────────────────────────────────── */
 
 export function StoriesView({ navigate }: { navigate: (v: View) => void }) {
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["stories"],
     queryFn: async () => {
       const res = await fetch("/api/stories");
@@ -132,6 +132,10 @@ export function StoriesView({ navigate }: { navigate: (v: View) => void }) {
             <p className="mt-2 text-sm text-muted-foreground">
               Something went wrong on our side. Please try again in a moment, insha&apos;Allah.
             </p>
+            <Button variant="outline" size="sm" className="mt-5" onClick={() => refetch()}>
+              <RefreshCw className="h-4 w-4" aria-hidden />
+              Try again
+            </Button>
           </div>
         ) : stories.length === 0 ? (
           <div className="mx-auto max-w-md rounded-2xl border border-gold-500/20 bg-card p-10 text-center">

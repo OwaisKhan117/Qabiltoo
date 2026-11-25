@@ -119,12 +119,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Only mutual-accepted pairs may chat (guardian of halal interaction)
-    const mutual = await db.interest.findFirst({
-      where: { fromId: fromId, toId: toId, status: "accepted" },
-    });
-    const reverse = await db.interest.findFirst({
-      where: { fromId: toId, toId: fromId, status: "accepted" },
-    });
+    const [mutual, reverse] = await Promise.all([
+      db.interest.findFirst({
+        where: { fromId: fromId, toId: toId, status: "accepted" },
+      }),
+      db.interest.findFirst({
+        where: { fromId: toId, toId: fromId, status: "accepted" },
+      }),
+    ]);
     if (!mutual || !reverse) {
       return NextResponse.json(
         { error: "Chat unlocks after both sides accept each other's proposals." },
@@ -132,23 +134,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const message = await db.message.create({
-      data: {
-        threadKey: [fromId, toId].sort().join(":"),
-        fromId,
-        toId,
-        body,
-      },
-    });
-
-    await db.notification.create({
-      data: {
-        profileId: toId,
-        type: "message",
-        title: `${from.fullName.split(" ")[0]} sent you a message`,
-        body: body.slice(0, 80),
-      },
-    });
+    // Message + recipient notification are independent writes → run in parallel
+    const [message] = await Promise.all([
+      db.message.create({
+        data: {
+          threadKey: [fromId, toId].sort().join(":"),
+          fromId,
+          toId,
+          body,
+        },
+      }),
+      db.notification.create({
+        data: {
+          profileId: toId,
+          type: "message",
+          title: `${from.fullName.split(" ")[0]} sent you a message`,
+          body: body.slice(0, 80),
+        },
+      }),
+    ]);
 
     return NextResponse.json({ message }, { status: 201 });
   } catch (error) {

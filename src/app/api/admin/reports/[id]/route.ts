@@ -31,33 +31,38 @@ export async function PATCH(
       return NextResponse.json({ error: "Report not found" }, { status: 404 });
     }
 
-    const updated = await db.report.update({
-      where: { id },
-      data: {
-        status: "resolved",
-        action: action === "dismiss" ? "none" : action,
-        resolvedAt: new Date(),
-      },
-    });
+    // Report update + moderation notification are independent writes → parallel
+    const notificationPromise =
+      action === "warn" || action === "suspend" || action === "ban"
+        ? db.notification.create({
+            data: {
+              profileId: report.profileId,
+              type: "system",
+              title:
+                action === "warn"
+                  ? "Community guidelines reminder"
+                  : action === "suspend"
+                    ? "Your account has been suspended"
+                    : "Your account has been banned",
+              body:
+                action === "warn"
+                  ? "A report was reviewed. Please review our Islamic etiquette guidelines and communicate with dignity."
+                  : "Our moderation team has taken action following a review. Contact support@qabiltoo.in to appeal.",
+            },
+          })
+        : Promise.resolve(null);
 
-    if (action === "warn" || action === "suspend" || action === "ban") {
-      await db.notification.create({
+    const [updated] = await Promise.all([
+      db.report.update({
+        where: { id },
         data: {
-          profileId: report.profileId,
-          type: "system",
-          title:
-            action === "warn"
-              ? "Community guidelines reminder"
-              : action === "suspend"
-                ? "Your account has been suspended"
-                : "Your account has been banned",
-          body:
-            action === "warn"
-              ? "A report was reviewed. Please review our Islamic etiquette guidelines and communicate with dignity."
-              : "Our moderation team has taken action following a review. Contact support@qabiltoo.in to appeal.",
+          status: "resolved",
+          action: action === "dismiss" ? "none" : action,
+          resolvedAt: new Date(),
         },
-      });
-    }
+      }),
+      notificationPromise,
+    ]);
 
     return NextResponse.json({ report: updated });
   } catch (error) {

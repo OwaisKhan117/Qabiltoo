@@ -25,7 +25,11 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
-    const request = await db.verificationRequest.findUnique({ where: { id } });
+    // Single fetch with the related profile — no extra round trip
+    const request = await db.verificationRequest.findUnique({
+      where: { id },
+      include: { profile: true },
+    });
     if (!request) {
       return NextResponse.json({ error: "Request not found" }, { status: 404 });
     }
@@ -40,46 +44,47 @@ export async function PATCH(
     });
 
     if (approved) {
-      const profile = await db.profile.findUnique({ where: { id: request.profileId } });
+      const profile = request.profile;
       if (profile) {
-        // Promote verification state: blue → green on approval, green stays, gold untouched
-        const nextTier =
-          profile.verificationTier === "gold"
-            ? "gold"
-            : profile.verificationTier === "green"
-              ? "green"
-              : "green";
-        await db.profile.update({
+        // Promote verification state: blue → green on approval, gold untouched
+        const nextTier = profile.verificationTier === "gold" ? "gold" : "green";
+        // Profile update + member notification are independent writes → parallel
+        await Promise.all([
+          db.profile.update({
+            where: { id: request.profileId },
+            data: {
+              idVerified: true,
+              verificationStatus: "approved",
+              verificationTier: nextTier,
+              trustScore: Math.min(100, profile.trustScore + 20),
+            },
+          }),
+          db.notification.create({
+            data: {
+              profileId: request.profileId,
+              type: "verification",
+              title: "Your ID verification is approved",
+              body: "Alhamdulillah! Your trust score has increased and your profile now displays a verified badge.",
+            },
+          }),
+        ]);
+      }
+    } else {
+      // Profile update + member notification are independent writes → parallel
+      await Promise.all([
+        db.profile.update({
           where: { id: request.profileId },
-          data: {
-            idVerified: true,
-            verificationStatus: "approved",
-            verificationTier: nextTier,
-            trustScore: Math.min(100, profile.trustScore + 20),
-          },
-        });
-        await db.notification.create({
+          data: { verificationStatus: "rejected" },
+        }),
+        db.notification.create({
           data: {
             profileId: request.profileId,
             type: "verification",
-            title: "Your ID verification is approved",
-            body: "Alhamdulillah! Your trust score has increased and your profile now displays a verified badge.",
+            title: "ID verification needs attention",
+            body: "We could not verify your document. Please re-upload a clearer photo of your ID.",
           },
-        });
-      }
-    } else {
-      await db.profile.update({
-        where: { id: request.profileId },
-        data: { verificationStatus: "rejected" },
-      });
-      await db.notification.create({
-        data: {
-          profileId: request.profileId,
-          type: "verification",
-          title: "ID verification needs attention",
-          body: "We could not verify your document. Please re-upload a clearer photo of your ID.",
-        },
-      });
+        }),
+      ]);
     }
 
     return NextResponse.json({ request: updated });

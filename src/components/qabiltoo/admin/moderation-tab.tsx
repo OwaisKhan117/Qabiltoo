@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  AlertCircle,
   Ban,
   ChevronDown,
   Flag,
@@ -12,6 +13,7 @@ import {
   ShieldAlert,
   ShieldX,
 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -56,7 +58,7 @@ const ACTION_COPY: Record<ReportAction, (name: string) => { title: string; descr
 
 async function fetchReports(status?: string): Promise<{ reports: AdminReport[] }> {
   const url = status ? `/api/admin/reports?status=${status}` : "/api/admin/reports";
-  const res = await fetch(url);
+  const res = await adminFetch(url);
   if (!res.ok) throw new Error("Failed to fetch reports");
   return res.json();
 }
@@ -67,7 +69,12 @@ export function ModerationTab() {
   const [handled, setHandled] = useState<Set<string>>(() => new Set());
   const [resolvedOpen, setResolvedOpen] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["admin", "reports", "open"],
     queryFn: () => fetchReports("open"),
     refetchInterval: 15_000,
@@ -86,7 +93,7 @@ export function ModerationTab() {
     setBusyKey(`${report.id}:${action}`);
     setHandled((prev) => new Set(prev).add(report.id));
     try {
-      const res = await fetch(`/api/admin/reports/${report.id}`, {
+      const res = await adminFetch(`/api/admin/reports/${report.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
@@ -141,7 +148,20 @@ export function ModerationTab() {
         <LiveChip label="Live · 15s" />
       </div>
 
-      {isLoading ? (
+      {isError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Could not load the moderation queue</AlertTitle>
+          <AlertDescription>
+            The reports service did not respond. {" "}
+            <button onClick={() => refetch()} className="font-semibold underline underline-offset-2">
+              Retry now
+            </button>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {!isError && isLoading ? (
         <div className="grid gap-4 md:grid-cols-2">
           {Array.from({ length: 2 }).map((_, i) => (
             <Skeleton key={i} className="h-52 rounded-2xl" />

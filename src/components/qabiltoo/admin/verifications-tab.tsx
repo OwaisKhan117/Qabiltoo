@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { BadgeCheck, Check, CheckCircle2, History, Loader2, X } from "lucide-react";
+import { AlertCircle, BadgeCheck, Check, CheckCircle2, History, Loader2, X } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,7 +33,7 @@ export function VerificationsTab() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [handled, setHandled] = useState<Set<string>>(() => new Set());
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["admin", "verifications", "pending"],
     queryFn: () => fetchVerifications("pending"),
     refetchInterval: 15_000,
@@ -115,7 +116,21 @@ export function VerificationsTab() {
           </CardDescription>
         </CardHeader>
         <CardContent className="px-5">
-          {isLoading ? (
+          {isError ? (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Could not load verification requests</AlertTitle>
+              <AlertDescription>
+                The verification service did not respond. {" "}
+                <button
+                  onClick={() => refetch()}
+                  className="font-semibold underline underline-offset-2"
+                >
+                  Retry now
+                </button>
+              </AlertDescription>
+            </Alert>
+          ) : isLoading ? (
             <div className="flex flex-col gap-3">
               {Array.from({ length: 3 }).map((_, i) => (
                 <Skeleton key={i} className="h-16 rounded-xl" />

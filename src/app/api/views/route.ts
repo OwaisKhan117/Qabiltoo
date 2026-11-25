@@ -9,15 +9,25 @@ export const dynamic = "force-dynamic";
  * Returns viewers of a profile, most recent first.
  * `locked` = viewer identity hidden behind premium paywall.
  * Rule: Free/Silver members see 1 teaser unlocked; Gold/Assisted/Unlimited see all.
+ * The viewer's tier is resolved from the database — never trusted from the client.
  */
 export async function GET(req: NextRequest) {
   try {
     const sp = req.nextUrl.searchParams;
     const profileId = sp.get("profileId");
-    const tier = sp.get("tier") ?? "Free";
     if (!profileId) {
       return NextResponse.json({ error: "profileId required" }, { status: 400 });
     }
+
+    // Tier comes from the DB (query param accepted for compatibility but not trusted)
+    const owner = await db.profile.findUnique({
+      where: { id: profileId },
+      select: { tier: true },
+    });
+    if (!owner) {
+      return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+    }
+    const tier = owner.tier;
 
     const views = await db.profileView.findMany({
       where: { profileId },
