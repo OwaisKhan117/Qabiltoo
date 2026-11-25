@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ParallaxCard } from "../shared/parallax-card";
 import { RingsBackdrop } from "../shared/rings-backdrop";
 import { VerificationBadge } from "../shared/verification-badge";
+import { ActivityTicker } from "./activity-ticker";
 import { displayName, type Profile, type ProfilesResponse, type View } from "@/lib/qabiltoo/types";
 import { cn } from "@/lib/utils";
 
@@ -130,7 +131,7 @@ export function Hero({ navigate }: HeroProps) {
       <div className="pointer-events-none absolute -right-32 bottom-0 h-[520px] w-[520px] rounded-full bg-gold-500/15 blur-3xl" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-emerald-950/70 to-transparent" />
 
-      <div className="relative mx-auto grid min-h-[92vh] w-full max-w-7xl items-center gap-10 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6 lg:px-8 lg:pb-20 lg:pt-16">
+      <div className="relative mx-auto grid min-h-[92vh] w-full max-w-7xl items-center gap-10 px-4 pb-20 pt-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6 lg:px-8 lg:pb-24 lg:pt-16">
         {/* ── Left: copy + CTAs ── */}
         <div className="max-w-2xl">
           {/* Arabic calligraphy accent */}
@@ -282,6 +283,10 @@ export function Hero({ navigate }: HeroProps) {
           )}
         </div>
       </div>
+
+      {/* live-activity pill — floats fully inside the hero, just above its
+          bottom edge, so it is always visible and never clipped by the fold */}
+      <ActivityTicker />
     </section>
   );
 }

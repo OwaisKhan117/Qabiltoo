@@ -79,7 +79,10 @@ export function ActivityTicker() {
   const Icon = visible ? (TYPE_ICON[visible.type] ?? Sparkles) : Sparkles;
 
   return (
-    <section aria-label="Live community activity" className="relative z-20 -mt-7 px-4">
+    <section
+      aria-label="Live community activity"
+      className="absolute inset-x-0 bottom-5 z-30 px-4"
+    >
       <div
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}

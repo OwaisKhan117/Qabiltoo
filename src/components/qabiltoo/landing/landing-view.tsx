@@ -1,6 +1,5 @@
 "use client";
 
-import { ActivityTicker } from "./activity-ticker";
 import { Hero } from "./hero";
 import { StatsStrip } from "./stats-strip";
 import { FeaturedProfiles } from "./featured-profiles";
@@ -29,7 +28,6 @@ export function LandingView({
   return (
     <main>
       <Hero navigate={navigate} />
-      <ActivityTicker />
       <StatsStrip />
       <MemberSpotlight />
       <FeaturedProfiles
