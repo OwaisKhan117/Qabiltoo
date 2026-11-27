@@ -108,6 +108,8 @@ interface FeaturedProfilesProps {
   onViewProfile: (profile: Profile) => void;
   onSendInterest: (profile: Profile) => void;
   interestedIds: Set<string>;
+  /** Server-fetched initial data — cards render in the SSR HTML */
+  initialFeatured?: ProfilesResponse;
 }
 
 export function FeaturedProfiles({
@@ -115,10 +117,12 @@ export function FeaturedProfiles({
   onViewProfile,
   onSendInterest,
   interestedIds,
+  initialFeatured,
 }: FeaturedProfilesProps) {
   const { data, isLoading } = useQuery({
     queryKey: ["featured-profiles-trust"],
     queryFn: fetchFeatured,
+    initialData: initialFeatured,
     staleTime: 30_000,
   });
 

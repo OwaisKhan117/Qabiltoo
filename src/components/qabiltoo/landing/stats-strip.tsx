@@ -26,7 +26,10 @@ export function StatsStrip() {
       <div className="absolute inset-0 opacity-70">
         <LightMotes count={22} speed={0.7} />
       </div>
-      <div className="pointer-events-none absolute left-1/4 top-0 h-40 w-72 rounded-full bg-gold-500/10 blur-3xl" />
+      <div
+        className="pointer-events-none absolute left-1/4 top-0 h-40 w-72"
+        style={{ background: "radial-gradient(closest-side, rgba(212,175,55,0.10), transparent)" }}
+      />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-4">

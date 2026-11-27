@@ -16,8 +16,14 @@ export function CtaSection({ navigate }: { navigate: (view: View) => void }) {
             {/* interlocking rings + pattern */}
             <RingsBackdrop className="opacity-60" />
             <PatternOverlay className="text-white/5" />
-            <div className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full bg-gold-500/10 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-gold-500/10 blur-3xl" />
+            <div
+              className="pointer-events-none absolute -left-20 -top-20 h-64 w-64"
+              style={{ background: "radial-gradient(closest-side, rgba(212,175,55,0.10), transparent)" }}
+            />
+            <div
+              className="pointer-events-none absolute -bottom-24 -right-16 h-72 w-72"
+              style={{ background: "radial-gradient(closest-side, rgba(212,175,55,0.10), transparent)" }}
+            />
 
             <div className="relative mx-auto max-w-2xl">
               <p

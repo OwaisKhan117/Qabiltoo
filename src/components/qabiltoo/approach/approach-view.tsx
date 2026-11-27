@@ -95,7 +95,7 @@ export function ApproachView({ navigate }: { navigate: (v: View) => void }) {
         <Reveal direction="scale">
           <div className="relative h-72 overflow-hidden rounded-3xl sm:h-80">
             <Image
-              src="/images/mosque-golden.png"
+              src="/images/mosque-golden.webp"
               alt="Mosque silhouette glowing at golden hour"
               fill
               priority

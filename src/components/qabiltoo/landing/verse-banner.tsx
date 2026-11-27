@@ -18,8 +18,14 @@ export function VerseBanner() {
       <div className="absolute inset-0 opacity-60">
         <LightMotes count={26} speed={0.7} />
       </div>
-      <div className="pointer-events-none absolute -left-24 top-1/2 h-80 w-80 -translate-y-1/2 rounded-full bg-gold-500/10 blur-3xl" />
-      <div className="pointer-events-none absolute -right-24 top-1/2 h-80 w-80 -translate-y-1/2 rounded-full bg-gold-500/10 blur-3xl" />
+      <div
+        className="pointer-events-none absolute -left-24 top-1/2 h-80 w-80 -translate-y-1/2"
+        style={{ background: "radial-gradient(closest-side, rgba(212,175,55,0.10), transparent)" }}
+      />
+      <div
+        className="pointer-events-none absolute -right-24 top-1/2 h-80 w-80 -translate-y-1/2"
+        style={{ background: "radial-gradient(closest-side, rgba(212,175,55,0.10), transparent)" }}
+      />
 
       <div className="relative mx-auto max-w-3xl px-4 sm:px-6">
         <Reveal direction="scale" duration={1}>

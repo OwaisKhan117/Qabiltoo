@@ -39,7 +39,7 @@ import { EmptyState, StoryThumb, adminFetch } from "./kit";
 /* ── Image picker source (existing story photos) ──────────────── */
 
 const STORY_IMAGES = [1, 2, 3, 4, 5].map((n) => ({
-  src: `/images/success-couple-${n}.png`,
+  src: `/images/success-couple-${n}.webp`,
   label: `Couple ${n}`,
 }));
 

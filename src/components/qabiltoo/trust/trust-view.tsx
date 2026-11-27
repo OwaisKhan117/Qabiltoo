@@ -338,7 +338,7 @@ export function TrustView({ navigate }: { navigate: (v: View) => void }) {
         <Reveal className="mx-auto max-w-5xl">
           <div className="relative overflow-hidden rounded-3xl">
             <Image
-              src="/images/mosque-golden.png"
+              src="/images/mosque-golden.webp"
               alt="Mosque silhouette at golden hour"
               fill
               sizes="(max-width: 1024px) 100vw, 1024px"

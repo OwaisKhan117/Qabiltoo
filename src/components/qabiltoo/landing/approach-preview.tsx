@@ -89,7 +89,7 @@ export function ApproachPreview({ navigate }: { navigate: (view: View) => void }
             />
             <div className="relative aspect-[3/4.4] overflow-hidden rounded-t-full rounded-b-[2rem] shadow-2xl shadow-primary/15">
               <Image
-                src="/images/mosque-golden.png"
+                src="/images/mosque-golden.webp"
                 alt="A mosque bathed in golden hour light — a symbol of the blessed nikah journey"
                 fill
                 sizes="(max-width: 640px) 256px, (max-width: 1024px) 320px, 352px"

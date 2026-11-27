@@ -19,9 +19,17 @@ export function MemberSpotlight() {
       className="relative overflow-hidden bg-background py-20 lg:py-24 dark:bg-card/40"
       aria-label="Member spotlight — Rumana"
     >
-      {/* soft decorative glows */}
-      <div className="pointer-events-none absolute -left-32 top-16 h-80 w-80 rounded-full bg-blush-300/25 blur-3xl dark:bg-blush-500/10" aria-hidden />
-      <div className="pointer-events-none absolute -right-24 bottom-10 h-96 w-96 rounded-full bg-gold-400/15 blur-3xl" aria-hidden />
+      {/* soft decorative glows — radial gradients (same look, cheap paint) */}
+      <div
+        className="pointer-events-none absolute -left-32 top-16 h-80 w-80 dark:opacity-40"
+        style={{ background: "radial-gradient(closest-side, rgba(232,193,180,0.25), transparent)" }}
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -right-24 bottom-10 h-96 w-96"
+        style={{ background: "radial-gradient(closest-side, rgba(223,187,82,0.15), transparent)" }}
+        aria-hidden
+      />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
@@ -34,7 +42,7 @@ export function MemberSpotlight() {
               />
               <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] border border-gold-500/30 shadow-2xl shadow-emerald-950/15">
                 <Image
-                  src="/images/profile-f7.png"
+                  src="/images/profile-f7.webp"
                   alt="Rumana"
                   fill
                   loading="lazy"

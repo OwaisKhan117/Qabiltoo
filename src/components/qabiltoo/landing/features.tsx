@@ -69,7 +69,10 @@ export function TrustBadges() {
           {BADGES.map((badge, i) => (
             <Reveal key={badge.title} delay={i * 0.12} duration={0.8} className="h-full">
               <div className="group relative h-full overflow-hidden rounded-3xl border border-border bg-card p-6 text-center shadow-sm transition-all duration-500 hover:-translate-y-1.5 hover:border-gold-400/40 hover:shadow-xl hover:shadow-gold-500/10">
-                <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-gold-200/25 blur-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                <div
+                  className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                  style={{ background: "radial-gradient(closest-side, rgba(239,223,163,0.25), transparent)" }}
+                />
 
                 <span className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center">
                   <PulseRing />

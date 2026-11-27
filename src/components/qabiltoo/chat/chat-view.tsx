@@ -185,11 +185,15 @@ export function ChatView({ navigate, withId }: { navigate: (v: View) => void; wi
       const data = (await res.json()) as { messages: ChatMessage[] };
       // Opening the thread reads it — inform the other side for live receipts
       if (activeId) {
-        getSocket().emit("chat:read", {
-          threadKey: threadKeyOf(myId, activeId),
-          readerId: myId,
-          otherId: activeId,
-        });
+        getSocket()
+          .then((socket) =>
+            socket.emit("chat:read", {
+              threadKey: threadKeyOf(myId, activeId),
+              readerId: myId,
+              otherId: activeId,
+            })
+          )
+          .catch(() => {});
         queryClient.invalidateQueries({ queryKey: ["threads", myId] });
       }
       return data;
@@ -233,11 +237,15 @@ export function ChatView({ navigate, withId }: { navigate: (v: View) => void; wi
       if (isOpen) {
         setExtras((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
         setTypingName(null);
-        getSocket().emit("chat:read", {
-          threadKey: m.threadKey,
-          readerId: myId,
-          otherId: m.fromId,
-        });
+        getSocket()
+          .then((socket) =>
+            socket.emit("chat:read", {
+              threadKey: m.threadKey,
+              readerId: myId,
+              otherId: m.fromId,
+            })
+          )
+          .catch(() => {});
       }
       queryClient.invalidateQueries({ queryKey: ["threads", myId] });
     },
@@ -298,11 +306,15 @@ export function ChatView({ navigate, withId }: { navigate: (v: View) => void; wi
     if (!activeId || !user) return;
     if (typingTimer.current) clearTimeout(typingTimer.current);
     typingTimer.current = setTimeout(() => {
-      getSocket().emit("chat:typing", {
-        threadKey: threadKeyOf(user.id, activeId),
-        toId: activeId,
-        name: user.fullName,
-      });
+      getSocket()
+        .then((socket) =>
+          socket.emit("chat:typing", {
+            threadKey: threadKeyOf(user.id, activeId),
+            toId: activeId,
+            name: user.fullName,
+          })
+        )
+        .catch(() => {});
     }, 400);
   }
 
@@ -333,7 +345,9 @@ export function ChatView({ navigate, withId }: { navigate: (v: View) => void; wi
       setDraft("");
       if (typingTimer.current) clearTimeout(typingTimer.current);
       // Relay live to the recipient (persistence already done via REST)
-      getSocket().emit("chat:new", { message });
+      getSocket()
+        .then((socket) => socket.emit("chat:new", { message }))
+        .catch(() => {});
       queryClient.invalidateQueries({ queryKey: ["threads", myId] });
     } catch {
       toast({

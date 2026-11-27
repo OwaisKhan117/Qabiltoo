@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import type { CSSProperties } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BadgeCheck, Lock, Sparkles, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,17 +22,15 @@ const LightMotes = dynamic(
 
 interface HeroProps {
   navigate: (view: View) => void;
+  /** Server-fetched gold profiles — hero cards render in the initial HTML */
+  initialHero?: ProfilesResponse;
 }
 
-/* Slow, dignified entrance for each line of copy */
-const fadeUp = {
-  hidden: { opacity: 0, y: 26 },
-  show: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.9, delay: 0.15 + i * 0.14, ease: [0.16, 1, 0.3, 1] as const },
-  }),
-};
+/* Slow, dignified entrance for each line of copy.
+   CSS transform-only (GPU-friendly) and the text is visible from the very
+   first paint — critical for LCP. Delay via --rise-delay. */
+const rise = (delay: number) =>
+  ({ "--rise-delay": `${delay}s` }) as CSSProperties;
 
 async function fetchGoldProfiles(): Promise<ProfilesResponse> {
   const res = await fetch("/api/profiles?verificationTier=gold&limit=3");
@@ -59,11 +57,9 @@ function FloatingProfileCard({
   priority?: boolean;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 40, scale: 0.94 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 1, delay, ease: [0.16, 1, 0.3, 1] }}
-      className={cn("absolute", className)}
+    <div
+      className={cn("rise-in-card absolute", className)}
+      style={rise(delay)}
     >
       <div className={floatClass}>
         <ParallaxCard maxTilt={7} depth={10} className="w-full">
@@ -98,14 +94,15 @@ function FloatingProfileCard({
           </div>
         </ParallaxCard>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-export function Hero({ navigate }: HeroProps) {
+export function Hero({ navigate, initialHero }: HeroProps) {
   const { data, isLoading } = useQuery({
     queryKey: ["hero-gold-profiles"],
     queryFn: fetchGoldProfiles,
+    initialData: initialHero,
     staleTime: 60_000,
   });
 
@@ -126,70 +123,59 @@ export function Hero({ navigate }: HeroProps) {
       <div className="absolute inset-0">
         <LightMotes count={42} speed={0.8} />
       </div>
-      {/* soft glows */}
-      <div className="pointer-events-none absolute -left-40 top-10 h-[460px] w-[460px] rounded-full bg-emerald-500/25 blur-3xl" />
-      <div className="pointer-events-none absolute -right-32 bottom-0 h-[520px] w-[520px] rounded-full bg-gold-500/15 blur-3xl" />
+      {/* soft glows — radial gradients (visually identical to blurred circles,
+          but cheap to paint: no 460–520px blur filters) */}
+      <div
+        className="pointer-events-none absolute -left-40 top-10 h-[460px] w-[460px]"
+        style={{ background: "radial-gradient(closest-side, rgba(46,132,105,0.25), transparent)" }}
+      />
+      <div
+        className="pointer-events-none absolute -right-32 bottom-0 h-[520px] w-[520px]"
+        style={{ background: "radial-gradient(closest-side, rgba(212,175,55,0.15), transparent)" }}
+      />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-emerald-950/70 to-transparent" />
 
       <div className="relative mx-auto grid min-h-[92vh] w-full max-w-7xl items-center gap-10 px-4 pb-20 pt-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-6 lg:px-8 lg:pb-24 lg:pt-16">
         {/* ── Left: copy + CTAs ── */}
         <div className="max-w-2xl">
           {/* Arabic calligraphy accent */}
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            custom={0}
-            className="mb-5 flex items-center gap-4"
-          >
+          <div className="rise-in mb-5 flex items-center gap-4" style={rise(0.15)}>
             <span className="font-arabic text-4xl leading-none text-gold-300 drop-shadow-[0_2px_14px_rgba(212,175,55,0.35)] sm:text-5xl" lang="ar" aria-hidden="true">
               نكاح
             </span>
             <span className="h-px w-14 bg-gradient-to-r from-gold-400/80 to-transparent" aria-hidden="true" />
-          </motion.div>
+          </div>
 
           {/* Eyebrow */}
-          <motion.p
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            custom={1}
-            className="mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-gold-200/90 sm:text-sm"
+          <p
+            className="rise-in mb-4 text-xs font-semibold uppercase tracking-[0.28em] text-gold-200/90 sm:text-sm"
+            style={rise(0.29)}
           >
             Assalamu Alaikum — Welcome to Qabiltoo
-          </motion.p>
+          </p>
 
           {/* Headline */}
-          <motion.h1
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            custom={2}
-            className="font-display text-4xl font-bold leading-[1.14] tracking-tight text-white sm:text-5xl lg:text-[3.6rem]"
+          <h1
+            className="rise-in font-display text-4xl font-bold leading-[1.14] tracking-tight text-white sm:text-5xl lg:text-[3.6rem]"
+            style={rise(0.43)}
           >
             Begin Your Journey to a{" "}
             <span className="text-gradient-gold">Blessed Nikah</span>
-          </motion.h1>
+          </h1>
 
           {/* Subheadline */}
-          <motion.p
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            custom={3}
-            className="mt-5 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg"
+          <p
+            className="rise-in mt-5 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg"
+            style={rise(0.57)}
           >
             A privacy-first, guardian-approved matrimony where every introduction is halal,
             every profile verified — and your family involved from the very first Salaam.
-          </motion.p>
+          </p>
 
           {/* CTAs */}
-          <motion.div
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            custom={4}
-            className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
+          <div
+            className="rise-in mt-8 flex flex-col gap-3 sm:flex-row sm:items-center"
+            style={rise(0.71)}
           >
             <Button
               size="lg"
@@ -208,15 +194,12 @@ export function Hero({ navigate }: HeroProps) {
               <Sparkles className="h-4 w-4 text-gold-300" />
               Meet Our Members
             </Button>
-          </motion.div>
+          </div>
 
           {/* Trust microcopy */}
-          <motion.ul
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            custom={5}
-            className="mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-white/70"
+          <ul
+            className="rise-in mt-8 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] text-white/70"
+            style={rise(0.85)}
           >
             <li className="flex items-center gap-1.5">
               <BadgeCheck className="h-4 w-4 text-gold-300" aria-hidden />
@@ -232,7 +215,7 @@ export function Hero({ navigate }: HeroProps) {
               <Lock className="h-4 w-4 text-gold-300" aria-hidden />
               Photos blurred until matched
             </li>
-          </motion.ul>
+          </ul>
         </div>
 
         {/* ── Right: floating 3D profile-card mockups ── */}
@@ -243,7 +226,8 @@ export function Hero({ navigate }: HeroProps) {
             aria-hidden="true"
           />
           <div
-            className="absolute left-1/2 top-1/2 h-[70%] w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-400/10 blur-3xl"
+            className="absolute left-1/2 top-1/2 h-[70%] w-[70%] -translate-x-1/2 -translate-y-1/2"
+            style={{ background: "radial-gradient(closest-side, rgba(223,187,82,0.10), transparent)" }}
             aria-hidden="true"
           />
 

@@ -179,7 +179,9 @@
     font-family: var(--font-amiri), "Traditional Arabic", serif;
   }
 
-  /* Gold gradient text with slow shimmer sweep */
+  /* Gold gradient text with slow shimmer sweep.
+     The sweep is paused until the page is interactive (html.perf-ready,
+     set shortly after hydration) so the load window stays paint-quiet. */
   .text-gradient-gold {
     background: linear-gradient(
       110deg,
@@ -194,6 +196,10 @@
     background-clip: text;
     color: transparent;
     animation: shimmer-text 7s linear infinite;
+    animation-play-state: paused;
+  }
+  :root.perf-ready .text-gradient-gold {
+    animation-play-state: running;
   }
   .text-gradient-emerald-gold {
     background: linear-gradient(120deg, #0b5345 20%, #b8962e 55%, #d4af37 80%);
@@ -227,9 +233,27 @@
     transform: translateX(130%) skewX(-12deg);
   }
 
-  /* Verification badge glow pulse */
-  .badge-pulse {
-    animation: pulse-glow 2.8s ease-in-out infinite;
+  /* Verification badge pulse — GPU-only ring (transform + opacity) */
+  .badge-pulse-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid var(--pulse-color, #d4af37);
+    pointer-events: none;
+    animation: pulse-ring 2.8s ease-in-out infinite;
+  }
+
+  /* Entrance animations — transform-only so content is visible from the
+     very first paint (LCP-safe) and frames stay on the compositor */
+  .rise-in {
+    transform: translateY(26px);
+    animation: rise-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--rise-delay, 0s);
+  }
+  .rise-in-card {
+    transform: translateY(40px) scale(0.94);
+    animation: rise-in-card 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--rise-delay, 0s);
   }
 
   /* Gentle floating */
@@ -315,13 +339,33 @@
   }
 }
 
-@keyframes pulse-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.5);
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
   }
-  50% {
-    box-shadow: 0 0 0 7px rgba(212, 175, 55, 0);
+  70%,
+  100% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    transform: translateY(26px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes rise-in-card {
+  from {
+    transform: translateY(40px) scale(0.94);
+  }
+  to {
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -363,12 +407,20 @@
 
 @media (prefers-reduced-motion: reduce) {
   .text-gradient-gold,
-  .badge-pulse,
+  .badge-pulse-ring,
   .float-slow,
   .float-slower,
   .spin-slower,
   .rings-drift,
-  .rings-twinkle {
+  .rings-twinkle,
+  .rise-in,
+  .rise-in-card {
     animation: none;
+  }
+  .rise-in {
+    transform: none;
+  }
+  .rise-in-card {
+    transform: none;
   }
 }

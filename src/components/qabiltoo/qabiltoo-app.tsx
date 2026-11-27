@@ -1,31 +1,91 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { ShieldAlert } from "lucide-react";
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Navbar } from "./navbar";
 import { Footer } from "./footer";
-import { AuthDialog } from "./auth-dialog";
 import { LandingView } from "./landing/landing-view";
-import { BrowseView } from "./browse/browse-view";
-import { ProfileDetailView } from "./profile/profile-detail-view";
-import { SendInterestDialog } from "./profile/send-interest-dialog";
-import { RegisterView } from "./register/register-view";
-import { MatchesView } from "./matches/matches-view";
-import { ChatView } from "./chat/chat-view";
-import { TrustView } from "./trust/trust-view";
-import { PricingView } from "./pricing/pricing-view";
-import { StoriesView } from "./stories-page/stories-view";
-import { ApproachView } from "./approach/approach-view";
-import { InfoView } from "./info/info-view";
-import { AdminView } from "./admin/admin-view";
+import { StarLoader } from "./shared/star-loader";
 import { useAuthStore } from "@/lib/qabiltoo/store";
 import { getSocket, useSocketEvent } from "@/lib/qabiltoo/socket";
-import type { InterestWithProfile, NotificationItem, Profile, View } from "@/lib/qabiltoo/types";
+import type { InterestWithProfile, NotificationItem, ProfilesResponse, Profile, View } from "@/lib/qabiltoo/types";
 
-function QabiltooShell() {
+/* ── Server-fetched landing data (React Query initialData) ──── */
+export interface QabiltooInitialData {
+  heroProfiles?: ProfilesResponse;
+  featuredProfiles?: ProfilesResponse;
+}
+
+/* ── Heavy / below-the-fold views are code-split ───────────────
+   Each chunk is fetched on first navigation; a calm star loader
+   fills the brief window while it arrives. This keeps the initial
+   bundle (landing page) small and hydration fast.                */
+function ViewLoader() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center" role="status" aria-label="Loading">
+      <StarLoader size={56} />
+    </div>
+  );
+}
+
+const BrowseView = dynamic(
+  () => import("./browse/browse-view").then((m) => ({ default: m.BrowseView })),
+  { loading: ViewLoader }
+);
+const ProfileDetailView = dynamic(
+  () => import("./profile/profile-detail-view").then((m) => ({ default: m.ProfileDetailView })),
+  { loading: ViewLoader }
+);
+const SendInterestDialog = dynamic(
+  () => import("./profile/send-interest-dialog").then((m) => ({ default: m.SendInterestDialog })),
+  { ssr: true }
+);
+const RegisterView = dynamic(
+  () => import("./register/register-view").then((m) => ({ default: m.RegisterView })),
+  { loading: ViewLoader }
+);
+const MatchesView = dynamic(
+  () => import("./matches/matches-view").then((m) => ({ default: m.MatchesView })),
+  { loading: ViewLoader }
+);
+const ChatView = dynamic(
+  () => import("./chat/chat-view").then((m) => ({ default: m.ChatView })),
+  { loading: ViewLoader }
+);
+const TrustView = dynamic(
+  () => import("./trust/trust-view").then((m) => ({ default: m.TrustView })),
+  { loading: ViewLoader }
+);
+const PricingView = dynamic(
+  () => import("./pricing/pricing-view").then((m) => ({ default: m.PricingView })),
+  { loading: ViewLoader }
+);
+const StoriesView = dynamic(
+  () => import("./stories-page/stories-view").then((m) => ({ default: m.StoriesView })),
+  { loading: ViewLoader }
+);
+const ApproachView = dynamic(
+  () => import("./approach/approach-view").then((m) => ({ default: m.ApproachView })),
+  { loading: ViewLoader }
+);
+const InfoView = dynamic(
+  () => import("./info/info-view").then((m) => ({ default: m.InfoView })),
+  { loading: ViewLoader }
+);
+const AdminView = dynamic(
+  () => import("./admin/admin-view").then((m) => ({ default: m.AdminView })),
+  { loading: ViewLoader }
+);
+const AuthDialog = dynamic(
+  () => import("./auth-dialog").then((m) => ({ default: m.AuthDialog })),
+  { ssr: true }
+);
+
+function QabiltooShell({ initial }: { initial?: QabiltooInitialData }) {
   const [view, setView] = useState<View>({ name: "landing" });
   const [authOpen, setAuthOpen] = useState(false);
   const [interestTarget, setInterestTarget] = useState<Profile | null>(null);
@@ -44,11 +104,29 @@ function QabiltooShell() {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, []);
 
+  /* ── Performance: resume purely-decorative CSS loops only once the
+        page is fully interactive (keeps the load window paint-quiet) ── */
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      document.documentElement.classList.add("perf-ready");
+      /* Warm the chunks for the most likely next views (login → My Profile,
+         chat, auth + proposal dialogs) — fetched on idle, never blocks load */
+      import("./profile/profile-detail-view").catch(() => {});
+      import("./profile/send-interest-dialog").catch(() => {});
+      import("./auth-dialog").catch(() => {});
+      import("./chat/chat-view").catch(() => {});
+    }, 1500);
+    return () => window.clearTimeout(id);
+  }, []);
+
   /* ── Socket identity + realtime notifications ─────────────── */
   useEffect(() => {
     if (!user) return;
-    const socket = getSocket();
-    socket.emit("identity", { profileId: user.id, name: user.fullName });
+    getSocket()
+      .then((socket) => {
+        socket.emit("identity", { profileId: user.id, name: user.fullName });
+      })
+      .catch(() => {});
   }, [user]);
 
   useSocketEvent("notification:new", (...args: unknown[]) => {
@@ -132,16 +210,19 @@ function QabiltooShell() {
       if (target) {
         markProposed(target.id);
         // Realtime relay: notify the recipient if they're online
-        const socket = getSocket();
         if (user) {
-          socket.emit("notify", {
-            toId: target.id,
-            notification: {
-              type: "proposal",
-              title: `New proposal from ${user.fullName.split(" ")[0]}`,
-              body: "Someone respects your profile and wishes to connect family-to-family.",
-            },
-          });
+          getSocket()
+            .then((socket) => {
+              socket.emit("notify", {
+                toId: target.id,
+                notification: {
+                  type: "proposal",
+                  title: `New proposal from ${user.fullName.split(" ")[0]}`,
+                  body: "Someone respects your profile and wishes to connect family-to-family.",
+                },
+              });
+            })
+            .catch(() => {});
         }
         toast({
           title: "Proposal sent",
@@ -166,6 +247,8 @@ function QabiltooShell() {
             onViewProfile={(p) => navigate({ name: "profile", id: p.id })}
             onSendInterest={handleSendInterest}
             interestedIds={interestedIds}
+            initialHero={initial?.heroProfiles}
+            initialFeatured={initial?.featuredProfiles}
           />
         )}
 
@@ -264,7 +347,7 @@ function QabiltooShell() {
   );
 }
 
-export function QabiltooApp() {
+export function QabiltooApp({ initial }: { initial?: QabiltooInitialData } = {}) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -276,7 +359,7 @@ export function QabiltooApp() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <QabiltooShell />
+      <QabiltooShell initial={initial} />
     </QueryClientProvider>
   );
 }

@@ -10,13 +10,16 @@ import { TrustBadges } from "./features";
 import { ApproachPreview } from "./approach-preview";
 import { Faq } from "./faq";
 import { CtaSection } from "./cta-section";
-import type { Profile, View } from "@/lib/qabiltoo/types";
+import type { ProfilesResponse, Profile, View } from "@/lib/qabiltoo/types";
 
 interface LandingViewProps {
   navigate: (view: View) => void;
   onViewProfile: (profile: Profile) => void;
   onSendInterest: (profile: Profile) => void;
   interestedIds: Set<string>;
+  /** Server-fetched initial data (ISR) — hero + featured render in SSR HTML */
+  initialHero?: ProfilesResponse;
+  initialFeatured?: ProfilesResponse;
 }
 
 export function LandingView({
@@ -24,10 +27,12 @@ export function LandingView({
   onViewProfile,
   onSendInterest,
   interestedIds,
+  initialHero,
+  initialFeatured,
 }: LandingViewProps) {
   return (
     <main>
-      <Hero navigate={navigate} />
+      <Hero navigate={navigate} initialHero={initialHero} />
       <StatsStrip />
       <MemberSpotlight />
       <FeaturedProfiles
@@ -35,6 +40,7 @@ export function LandingView({
         onViewProfile={onViewProfile}
         onSendInterest={onSendInterest}
         interestedIds={interestedIds}
+        initialFeatured={initialFeatured}
       />
       <VerseBanner />
       <SuccessStories navigate={navigate} />

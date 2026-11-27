@@ -1,6 +1,7 @@
 "use client";
 
 import { BadgeCheck } from "lucide-react";
+import type { CSSProperties } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { VERIFICATION_TIER_META, type VerificationTier } from "@/lib/qabiltoo/types";
 import { cn } from "@/lib/utils";
@@ -43,12 +44,21 @@ export function VerificationBadge({
               boxShadow: glow ? `0 0 10px ${meta.glow}` : undefined,
             }}
           >
-            <BadgeCheck
-              className={cn("shrink-0", glow && "badge-pulse rounded-full")}
-              style={{ color: meta.color }}
-              width={iconSize}
-              height={iconSize}
-            />
+            <span className="relative inline-flex">
+              <BadgeCheck
+                className="shrink-0 rounded-full"
+                style={{ color: meta.color }}
+                width={iconSize}
+                height={iconSize}
+              />
+              {glow && (
+                <span
+                  aria-hidden
+                  className="badge-pulse-ring"
+                  style={{ "--pulse-color": meta.color } as CSSProperties}
+                />
+              )}
+            </span>
             {showLabel && <span className="truncate">{meta.label}</span>}
           </span>
         </TooltipTrigger>

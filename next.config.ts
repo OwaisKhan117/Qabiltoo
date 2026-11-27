@@ -13,6 +13,32 @@ const nextConfig: NextConfig = {
   images: {
     dangerouslyAllowSVG: true,
     contentDispositionType: "inline",
+    /* Prefer the most efficient modern formats for every optimized image */
+    formats: ["image/avif", "image/webp"],
+  },
+  /* Long-lived caching for hashed build assets (default) + explicit
+     caching for public static assets (images, logo marks). */
+  async headers() {
+    return [
+      {
+        source: "/images/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+      {
+        source: "/:file(svg|png|webp|ico)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+    ];
   },
 };
 
